@@ -1,0 +1,43 @@
+{
+  "id": "virtual-station-v1",
+  "metadata": {
+    "name": "가상 복합시설 실험 지도",
+    "description": "경로 알고리즘 검증용 가상 공간이며 실제 서울역 구조가 아닙니다.",
+    "experimental": true,
+    "coordinate_note": "x, y는 시각화용 상대 좌표이며 실제 거리나 좌표계가 아닙니다."
+  },
+  "nodes": [
+    {"id":"S1","type":"START","x":0,"y":2,"floor":1,"label":"출발점 1"},
+    {"id":"S2","type":"START","x":0,"y":5,"floor":1,"label":"출발점 2"},
+    {"id":"S3","type":"START","x":3,"y":7,"floor":2,"label":"출발점 3"},
+    {"id":"J1","type":"JUNCTION","x":3,"y":2,"floor":1,"label":"갈림길 1"},
+    {"id":"J2","type":"JUNCTION","x":6,"y":2,"floor":1,"label":"갈림길 2"},
+    {"id":"J3","type":"JUNCTION","x":3,"y":5,"floor":1,"label":"갈림길 3"},
+    {"id":"J4","type":"JUNCTION","x":7,"y":5,"floor":1,"label":"갈림길 4"},
+    {"id":"T1","type":"STAIR","x":5,"y":7,"floor":2,"label":"계단 상부"},
+    {"id":"T2","type":"STAIR","x":5,"y":5,"floor":1,"label":"계단 하부"},
+    {"id":"E1","type":"EXIT","x":10,"y":1,"floor":1,"label":"출구 1"},
+    {"id":"E2","type":"EXIT","x":10,"y":5,"floor":1,"label":"출구 2"},
+    {"id":"E3","type":"EXIT","x":8,"y":8,"floor":2,"label":"출구 3"}
+  ],
+  "edges": [
+    {"id":"A01","source":"S1","target":"J1","length_m":18,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A02","source":"S2","target":"J3","length_m":16,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A03","source":"S3","target":"T1","length_m":12,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A04","source":"J1","target":"J2","length_m":20,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A05","source":"J1","target":"J3","length_m":17,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A06","source":"J2","target":"E1","length_m":22,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A07","source":"J2","target":"J4","length_m":18,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A08","source":"J3","target":"J4","length_m":25,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A09","source":"J4","target":"E2","length_m":20,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A10","source":"J3","target":"T2","length_m":10,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A11","source":"T2","target":"T1","length_m":14,"type":"STAIR","bidirectional":true},
+    {"id":"A12","source":"T1","target":"E3","length_m":21,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A13","source":"T2","target":"J4","length_m":13,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A14","source":"J2","target":"T2","length_m":19,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A15","source":"S2","target":"J1","length_m":24,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A16","source":"J4","target":"E1","length_m":30,"type":"CORRIDOR","bidirectional":true},
+    {"id":"A17","source":"E3","target":"T1","length_m":18,"type":"CORRIDOR","bidirectional":false},
+    {"id":"A18","source":"S1","target":"J3","length_m":30,"type":"CORRIDOR","bidirectional":true}
+  ]
+}
