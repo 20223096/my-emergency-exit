@@ -46,3 +46,16 @@ def find_parallel_edges(indoor_map: IndoorMap) -> list[ParallelEdgeFinding]:
             overlapping_directions=overlapping,
         ))
     return findings
+
+
+def validate_control_groups(indoor_map: IndoorMap) -> list[str]:
+    """Return integrity errors for physical blocking/control semantics."""
+    errors: list[str] = []
+    for finding in find_parallel_edges(indoor_map):
+        edges = [edge for edge in indoor_map.edges if edge.id in finding.edge_ids]
+        groups = {edge.physical_control_group for edge in edges}
+        if None in groups or len(groups) != 1:
+            errors.append(
+                f"parallel edges {', '.join(finding.edge_ids)} need one shared physical_control_group"
+            )
+    return errors

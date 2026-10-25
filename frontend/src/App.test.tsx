@@ -75,4 +75,24 @@ describe('development screen', () => {
     expect(screen.getByRole('heading', { name: '내비상구 경로 실험 화면' })).toBeInTheDocument()
     await waitFor(() => expect(screen.queryByText('데이터를 처리하고 있습니다…')).not.toBeInTheDocument())
   })
+
+  it('adds congestion to the comparison request and reset clears it', async () => {
+    const fetchMock = installFetch()
+    const user = userEvent.setup()
+    render(<App />)
+    await screen.findByTestId('node-S1')
+    await user.selectOptions(screen.getByLabelText('혼잡 구간 선택'), 'A06')
+    await user.clear(screen.getByLabelText('혼잡 추가 지연'))
+    await user.type(screen.getByLabelText('혼잡 추가 지연'), '20')
+    await user.click(screen.getByRole('button', { name: '혼잡 지연 추가' }))
+    await user.click(screen.getByRole('button', { name: '기본 경로와 비교' }))
+    await screen.findByText('테스트 변경 사유')
+    const calls = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/api/routes/compare'))
+    expect(JSON.parse(String(calls.at(-1)?.[1]?.body))).toMatchObject({
+      congestion_delays: { A06: 20 }, stair_speed_mps: 0.8,
+    })
+    await user.click(screen.getByRole('button', { name: '초기화' }))
+    expect(screen.getByLabelText('혼잡 구간 선택')).toHaveValue('')
+    expect(screen.getAllByText('아직 계산하지 않았습니다.')).toHaveLength(3)
+  })
 })

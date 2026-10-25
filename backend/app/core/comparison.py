@@ -10,6 +10,7 @@ def compare_routes(indoor_map: IndoorMap, request: RouteRequest) -> CompareResul
         start_node_id=request.start_node_id,
         walking_speed_mps=request.walking_speed_mps,
         reaction_delay_s=request.reaction_delay_s,
+        stair_speed_mps=request.stair_speed_mps,
     )
     baseline = calculate_route(indoor_map, baseline_request)
     scenario = calculate_route(indoor_map, request)

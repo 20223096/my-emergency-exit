@@ -1,5 +1,6 @@
 export type NodeType = 'START' | 'JUNCTION' | 'STAIR' | 'EXIT'
 export type EdgeType = 'CORRIDOR' | 'STAIR'
+export type ProvenanceKind = 'MAP_CONFIRMED' | 'SIMPLIFIED' | 'SIMULATION_ASSUMPTION' | 'UNVERIFIED'
 
 export interface MapNode {
   id: string
@@ -8,6 +9,10 @@ export interface MapNode {
   y: number
   floor: number
   label: string
+  provenance?: ProvenanceKind | null
+  source_ref?: string | null
+  active_for_routing?: boolean
+  official_evacuation_exit?: boolean | null
 }
 
 export interface MapEdge {
@@ -17,6 +22,11 @@ export interface MapEdge {
   length_m: number
   type: EdgeType
   bidirectional: boolean
+  provenance?: ProvenanceKind | null
+  source_ref?: string | null
+  length_source?: string | null
+  physical_control_group?: string | null
+  blockable?: boolean
 }
 
 export interface MapMetadata {
@@ -24,6 +34,8 @@ export interface MapMetadata {
   description: string
   experimental: boolean
   coordinate_note: string
+  scope_note?: string | null
+  safety_notice?: string | null
 }
 
 export interface IndoorMap {
@@ -53,6 +65,8 @@ export interface Scenario {
   map_id: string
   start_node_id: string
   conditions: ScenarioConditions
+  hazard_edge_ids?: string[]
+  assumption_notice?: string | null
 }
 
 export interface RouteRequest extends ScenarioConditions {
@@ -60,10 +74,12 @@ export interface RouteRequest extends ScenarioConditions {
   start_node_id: string
   walking_speed_mps: number
   reaction_delay_s: number
+  stair_speed_mps?: number | null
 }
 
 export interface AppliedConditions extends ScenarioConditions {
   walking_speed_mps: number
+  stair_speed_mps?: number | null
 }
 
 export interface RouteResult {

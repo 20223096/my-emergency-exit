@@ -10,6 +10,7 @@ interface MapCanvasProps {
   congestionDelays?: Record<string, number>
   selectedStartNodeId?: string
   floor?: number | null
+  hazardEdgeIds?: string[]
 }
 
 export function MapCanvas({
@@ -21,6 +22,7 @@ export function MapCanvas({
   congestionDelays = {},
   selectedStartNodeId,
   floor = null,
+  hazardEdgeIds = [],
 }: MapCanvasProps) {
   const visibleNodeIds = new Set(
     mapData.nodes.filter((node) => floor === null || node.floor === floor).map((node) => node.id),
@@ -33,6 +35,7 @@ export function MapCanvas({
   const scenarioEdges = new Set(scenarioRoute?.path_edges || [])
   const blockedEdges = new Set(blockedEdgeIds)
   const blockedExits = new Set(blockedExitIds)
+  const hazardEdges = new Set(hazardEdgeIds)
 
   return (
     <section className="map-panel" aria-label="실험용 공간 지도">
@@ -41,6 +44,8 @@ export function MapCanvas({
         <span className="legend-scenario">변경 경로</span>
         <span className="legend-blocked">차단</span>
         <span className="legend-congested">혼잡</span>
+        <span className="legend-stair">계단/층 연결</span>
+        <span className="legend-fire">화재 가정 위치</span>
       </div>
       <svg
         className="map-canvas"
@@ -60,7 +65,8 @@ export function MapCanvas({
             const geometry = getEdgeGeometry(mapData, edge)
             const blocked = blockedEdges.has(edge.id)
             const congested = edge.id in congestionDelays
-            const classes = ['map-edge', blocked && 'is-blocked', congested && 'is-congested']
+            const hazard = hazardEdges.has(edge.id)
+            const classes = ['map-edge', edge.type === 'STAIR' && 'is-stair', blocked && 'is-blocked', congested && 'is-congested', hazard && 'is-hazard']
               .filter(Boolean).join(' ')
             return (
               <g key={edge.id} data-testid={`edge-${edge.id}`} data-edge-id={edge.id}>
@@ -82,6 +88,7 @@ export function MapCanvas({
                     <path d={`M ${geometry.midpoint.x + 0.18} ${geometry.midpoint.y - 0.18} L ${geometry.midpoint.x - 0.18} ${geometry.midpoint.y + 0.18}`} />
                   </g>
                 )}
+                {hazard && <text x={geometry.midpoint.x} y={geometry.midpoint.y + 0.35} className="fire-label">🔥 화재 가정</text>}
               </g>
             )
           })}

@@ -1,7 +1,7 @@
 :root { font-family: Inter, Pretendard, system-ui, sans-serif; color: #182321; background: #edf1ed; font-synthesis: none; }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; }
-button, select { font: inherit; }
+button, select, input { font: inherit; }
 .app-shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0 28px; }
 header { border-bottom: 1px solid #bdc9c4; padding-bottom: 24px; }
 header h1 { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2rem, 6vw, 4.25rem); font-weight: 500; letter-spacing: -.04em; margin: 8px 0; }
@@ -9,10 +9,12 @@ header p { max-width: 720px; color: #53625d; }
 .eyebrow { color: #0b6b56; font-size: .75rem; letter-spacing: .18em; font-weight: 750; }
 .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 22px 0; }
 label { display: grid; gap: 6px; font-size: .78rem; font-weight: 700; color: #53625d; }
-select { width: 100%; border: 1px solid #aab9b3; border-radius: 4px; background: #fff; padding: 10px; color: #182321; }
+select, input { width: 100%; border: 1px solid #aab9b3; border-radius: 4px; background: #fff; padding: 10px; color: #182321; }
+.inline-action { display: flex; align-items: end; }
 .button-row { grid-column: 1 / -1; display: flex; gap: 10px; }
 button { border: 1px solid #0b6b56; border-radius: 3px; padding: 10px 18px; color: white; background: #0b6b56; cursor: pointer; font-weight: 750; }
 button.secondary { color: #0b6b56; background: transparent; }
+button.reset { color: #53625d; border-color: #7b8984; background: transparent; }
 button:disabled { opacity: .45; cursor: not-allowed; }
 .status, .error { padding: 12px 14px; border-left: 3px solid #0b6b56; background: white; }
 .error { border-color: #b73535; color: #7a2424; }
@@ -23,10 +25,14 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .legend-scenario::before { background: #d14d28 !important; }
 .legend-blocked::before { background: #bc2d35 !important; }
 .legend-congested::before { background: #e59b17 !important; }
+.legend-stair::before { background: #79549d !important; }
+.legend-fire::before { background: #d13422 !important; }
 .map-canvas { display: block; width: 100%; height: min(62vh, 640px); min-height: 360px; background: #fff; }
 .map-edge { fill: none; stroke: #a9b3af; stroke-width: .1; vector-effect: non-scaling-stroke; }
 .map-edge.is-congested { stroke: #e59b17; stroke-width: .18; }
 .map-edge.is-blocked { stroke: #bc2d35; stroke-dasharray: .2 .13; }
+.map-edge.is-stair { stroke: #79549d; stroke-dasharray: .12 .08; }
+.map-edge.is-hazard { stroke: #d13422; stroke-width: .22; }
 .direction-arrow { fill: #59645f; }
 .route-overlay { fill: none; stroke-width: .18; pointer-events: none; vector-effect: non-scaling-stroke; }
 .route-baseline { stroke: #1f67d2; }
@@ -37,7 +43,8 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .node-stair circle { fill: #ebe3f7; stroke: #79549d; }
 .map-node.is-selected circle { stroke: #0b6b56; stroke-width: .14; }
 .map-node.is-closed circle { fill: #ead4d4; }
-.node-label, .edge-status-label { font-size: .24px; text-anchor: middle; fill: #26332f; pointer-events: none; }
+.node-label, .edge-status-label, .fire-label { font-size: .24px; text-anchor: middle; fill: #26332f; pointer-events: none; }
+.fire-label { fill: #a82216; font-weight: 800; }
 .edge-status-label { fill: #a86300; font-weight: 800; }
 .blocked-cross path, .closed-cross { stroke: #b51f2d; stroke-width: .11; vector-effect: non-scaling-stroke; }
 .results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 16px; background: #c8d2ce; border: 1px solid #c8d2ce; }
@@ -45,6 +52,8 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .results span { display: block; color: #687570; font-size: .75rem; margin-bottom: 7px; }
 .results strong { font-size: .95rem; }
 .reason { grid-column: 1 / -1; margin: 0; background: #fff8e6; padding: 12px 16px; }
+.notice { margin: 12px 0 0; padding: 12px 14px; border-left: 3px solid #b56c16; background: #fff8e6; font-size: .82rem; }
+.scenario-notice { border-left-color: #b73535; }
 footer { color: #687570; font-size: .75rem; padding: 20px 0; }
 @media (max-width: 760px) { .controls { grid-template-columns: 1fr 1fr; } .results { grid-template-columns: 1fr; } .map-canvas { min-height: 300px; } }
 @media (max-width: 480px) { .app-shell { width: min(100% - 20px, 1180px); padding-top: 24px; } .controls { grid-template-columns: 1fr; } .button-row { flex-direction: column; } }

@@ -18,6 +18,13 @@ class EdgeType(str, Enum):
     STAIR = "STAIR"
 
 
+class ProvenanceKind(str, Enum):
+    MAP_CONFIRMED = "MAP_CONFIRMED"
+    SIMPLIFIED = "SIMPLIFIED"
+    SIMULATION_ASSUMPTION = "SIMULATION_ASSUMPTION"
+    UNVERIFIED = "UNVERIFIED"
+
+
 class Node(BaseModel):
     id: str = Field(min_length=1)
     type: NodeType
@@ -25,6 +32,10 @@ class Node(BaseModel):
     y: float
     floor: int
     label: str = Field(min_length=1)
+    provenance: ProvenanceKind | None = None
+    source_ref: str | None = None
+    active_for_routing: bool = True
+    official_evacuation_exit: bool | None = None
 
 
 class Edge(BaseModel):
@@ -34,6 +45,11 @@ class Edge(BaseModel):
     length_m: Annotated[float, Field(gt=0)]
     type: EdgeType
     bidirectional: bool = True
+    provenance: ProvenanceKind | None = None
+    source_ref: str | None = None
+    length_source: str | None = None
+    physical_control_group: str | None = None
+    blockable: bool = True
 
 
 class MapMetadata(BaseModel):
@@ -41,6 +57,8 @@ class MapMetadata(BaseModel):
     description: str
     experimental: bool = True
     coordinate_note: str
+    scope_note: str | None = None
+    safety_notice: str | None = None
 
 
 class IndoorMap(BaseModel):
@@ -61,6 +79,12 @@ class IndoorMap(BaseModel):
         for edge in self.edges:
             if edge.source not in known or edge.target not in known:
                 raise ValueError(f"edge '{edge.id}' references an unknown node")
+            source = next(node for node in self.nodes if node.id == edge.source)
+            target = next(node for node in self.nodes if node.id == edge.target)
+            if edge.type == EdgeType.STAIR and source.floor == target.floor:
+                raise ValueError(f"stair edge '{edge.id}' must connect different floors")
+            if edge.type != EdgeType.STAIR and source.floor != target.floor:
+                raise ValueError(f"cross-floor edge '{edge.id}' must be a STAIR")
         return self
 
 
@@ -84,6 +108,8 @@ class Scenario(BaseModel):
     map_id: str
     start_node_id: str
     conditions: ScenarioConditions
+    hazard_edge_ids: list[str] = Field(default_factory=list)
+    assumption_notice: str | None = None
 
 
 class RouteRequest(ScenarioConditions):
@@ -91,6 +117,7 @@ class RouteRequest(ScenarioConditions):
     start_node_id: str
     walking_speed_mps: Annotated[float, Field(gt=0, le=10)] = 1.2
     reaction_delay_s: Annotated[float, Field(ge=0, le=3600)] = 0
+    stair_speed_mps: Annotated[float, Field(gt=0, le=10)] | None = None
 
     @model_validator(mode="after")
     def unique_condition_ids(self) -> "RouteRequest":
@@ -106,6 +133,7 @@ class AppliedConditions(BaseModel):
     blocked_exit_ids: list[str]
     congestion_delays: dict[str, float]
     walking_speed_mps: float
+    stair_speed_mps: float | None = None
 
 
 class RouteResult(BaseModel):

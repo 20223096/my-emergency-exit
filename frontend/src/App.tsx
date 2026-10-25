@@ -28,9 +28,15 @@ export default function App() {
   const [comparison, setComparison] = useState<RouteComparison | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [actionError, setActionError] = useState<ApiError | null>(null)
+  const [walkingSpeed, setWalkingSpeed] = useState(1.2)
+  const [stairSpeed, setStairSpeed] = useState(0.8)
+  const [reactionDelay, setReactionDelay] = useState(5)
+  const [congestionEdgeId, setCongestionEdgeId] = useState('')
+  const [congestionDelay, setCongestionDelay] = useState(30)
 
   const starts = useMemo(() => mapData?.nodes.filter((node) => node.type === 'START') || [], [mapData])
   const floors = useMemo(() => [...new Set(mapData?.nodes.map((node) => node.floor) || [])].sort(), [mapData])
+  const selectedScenario = scenarios.find((scenario) => scenario.id === scenarioId)
 
   useEffect(() => {
     if (starts.length && !starts.some((node) => node.id === startNodeId)) setStartNodeId(starts[0].id)
@@ -43,9 +49,13 @@ export default function App() {
       setConditions(emptyConditions())
       return
     }
-    if (selected.map_id !== selectedMapId) setSelectedMapId(selected.map_id)
-    setStartNodeId(selected.start_node_id)
+    if (selected.map_id !== selectedMapId) {
+      setSelectedMapId(selected.map_id)
+      setStartNodeId(selected.start_node_id)
+    }
     setConditions(selected.conditions)
+    setRoute(null)
+    setComparison(null)
   }
 
   const requestBody = (): RouteRequest => ({
@@ -54,9 +64,43 @@ export default function App() {
     blocked_edge_ids: conditions.blocked_edge_ids,
     blocked_exit_ids: conditions.blocked_exit_ids,
     congestion_delays: conditions.congestion_delays,
-    walking_speed_mps: 1.2,
-    reaction_delay_s: 5,
+    walking_speed_mps: walkingSpeed,
+    stair_speed_mps: stairSpeed,
+    reaction_delay_s: reactionDelay,
   })
+
+  const addCongestion = () => {
+    if (!congestionEdgeId) return
+    setConditions((current) => ({
+      ...current,
+      congestion_delays: { ...current.congestion_delays, [congestionEdgeId]: congestionDelay },
+    }))
+    setRoute(null)
+    setComparison(null)
+  }
+
+  const reset = () => {
+    setScenarioId('')
+    setConditions(emptyConditions())
+    setWalkingSpeed(1.2)
+    setStairSpeed(0.8)
+    setReactionDelay(5)
+    setCongestionEdgeId('')
+    setCongestionDelay(30)
+    setRoute(null)
+    setComparison(null)
+    setActionError(null)
+  }
+
+  const changeMap = (mapId: string) => {
+    setSelectedMapId(mapId)
+    setScenarioId('')
+    setConditions(emptyConditions())
+    setCongestionEdgeId('')
+    setRoute(null)
+    setComparison(null)
+    setActionError(null)
+  }
 
   const runAction = async (kind: 'calculate' | 'compare') => {
     if (!selectedMapId || !startNodeId) return
@@ -89,7 +133,7 @@ export default function App() {
 
       <section className="controls" aria-label="경로 조건">
         <label>지도
-          <select aria-label="지도 선택" value={selectedMapId} onChange={(event) => setSelectedMapId(event.target.value)}>
+          <select aria-label="지도 선택" value={selectedMapId} onChange={(event) => changeMap(event.target.value)}>
             {maps.map((map) => <option key={map.id} value={map.id}>{map.name}</option>)}
           </select>
         </label>
@@ -112,9 +156,29 @@ export default function App() {
             {floors.map((item) => <option key={item} value={item}>{item}층</option>)}
           </select>
         </label>
+        <label>평지 속도 (m/s)
+          <input aria-label="평지 이동속도" type="number" min="0.1" max="10" step="0.1" value={walkingSpeed} onChange={(event) => setWalkingSpeed(Number(event.target.value))} />
+        </label>
+        <label>계단 속도 (m/s)
+          <input aria-label="계단 이동속도" type="number" min="0.1" max="10" step="0.1" value={stairSpeed} onChange={(event) => setStairSpeed(Number(event.target.value))} />
+        </label>
+        <label>출발 반응시간 (초)
+          <input aria-label="출발 반응시간" type="number" min="0" max="3600" value={reactionDelay} onChange={(event) => setReactionDelay(Number(event.target.value))} />
+        </label>
+        <label>혼잡 구간
+          <select aria-label="혼잡 구간 선택" value={congestionEdgeId} onChange={(event) => setCongestionEdgeId(event.target.value)}>
+            <option value="">구간 선택</option>
+            {mapData?.edges.map((edge) => <option key={edge.id} value={edge.id}>{edge.id} · {edge.source}–{edge.target}</option>)}
+          </select>
+        </label>
+        <label>혼잡 추가 지연 (초)
+          <input aria-label="혼잡 추가 지연" type="number" min="0" value={congestionDelay} onChange={(event) => setCongestionDelay(Number(event.target.value))} />
+        </label>
+        <div className="inline-action"><button className="secondary" disabled={!congestionEdgeId} onClick={addCongestion}>혼잡 지연 추가</button></div>
         <div className="button-row">
           <button disabled={actionLoading || dataLoading || !mapData} onClick={() => void runAction('calculate')}>경로 계산</button>
           <button className="secondary" disabled={actionLoading || dataLoading || !mapData} onClick={() => void runAction('compare')}>기본 경로와 비교</button>
+          <button className="reset" disabled={actionLoading} onClick={reset}>초기화</button>
         </div>
       </section>
 
@@ -131,13 +195,20 @@ export default function App() {
           congestionDelays={conditions.congestion_delays}
           selectedStartNodeId={startNodeId}
           floor={floor}
+          hazardEdgeIds={selectedScenario?.hazard_edge_ids || []}
         />
       )}
+
+      {mapData?.metadata.safety_notice && <p className="notice">{mapData.metadata.safety_notice}</p>}
+      {selectedScenario?.assumption_notice && <p className="notice scenario-notice">{selectedScenario.assumption_notice}</p>}
 
       <section className="results" aria-label="계산 결과">
         <article><span>계산 경로</span><strong>{resultText(route)}</strong></article>
         <article><span>기본 경로</span><strong>{resultText(comparison?.baseline || null)}</strong></article>
         <article><span>변경 경로</span><strong>{resultText(comparison?.scenario || null)}</strong></article>
+        <article><span>출구 변경</span><strong>{comparison ? (comparison.exit_changed ? '변경됨' : '동일') : '—'}</strong></article>
+        <article><span>거리 변화</span><strong>{comparison?.distance_delta_m == null ? '—' : `${comparison.distance_delta_m >= 0 ? '+' : ''}${comparison.distance_delta_m}m`}</strong></article>
+        <article><span>시간 변화</span><strong>{comparison?.total_time_delta_s == null ? '—' : `${comparison.total_time_delta_s >= 0 ? '+' : ''}${comparison.total_time_delta_s}초`}</strong></article>
         {comparison?.change_reasons.map((reason) => <p key={reason} className="reason">{reason}</p>)}
       </section>
 

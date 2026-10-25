@@ -45,4 +45,10 @@ describe('MapCanvas', () => {
     expect(screen.queryByTestId('node-S1')).not.toBeInTheDocument()
     expect(screen.getByTestId('edge-A12')).toBeInTheDocument()
   })
+
+  it('marks a fire location as a simulation hazard', () => {
+    render(<MapCanvas mapData={mapFixture} hazardEdgeIds={['A01']} />)
+    expect(screen.getByTestId('edge-A01').querySelector('.is-hazard')).toBeInTheDocument()
+    expect(screen.getByText('🔥 화재 가정')).toBeInTheDocument()
+  })
 })
