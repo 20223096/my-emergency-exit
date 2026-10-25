@@ -8,12 +8,12 @@ function jsonResponse(data: unknown, status = 200) {
   return Promise.resolve(new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } }))
 }
 
-function installFetch(routeResult = routeFixture, availableScenarios = [scenarioFixture]) {
+function installFetch(routeResult = routeFixture, availableScenarios = [scenarioFixture], availableMap = mapFixture) {
   return vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
     const url = String(input)
-    if (url.endsWith('/api/maps')) return jsonResponse([{ id: mapFixture.id, name: '가상 지도', description: 'test', experimental: true }])
+    if (url.endsWith('/api/maps')) return jsonResponse([{ id: availableMap.id, name: '가상 지도', description: 'test', experimental: true }])
     if (url.endsWith('/api/scenarios')) return jsonResponse(availableScenarios)
-    if (url.includes(`/api/maps/${mapFixture.id}`)) return jsonResponse(mapFixture)
+    if (url.includes(`/api/maps/${availableMap.id}`)) return jsonResponse(availableMap)
     if (url.endsWith('/api/routes/calculate')) return jsonResponse(routeResult)
     if (url.endsWith('/api/routes/compare')) return jsonResponse({
       baseline: routeFixture, scenario: routeResult, path_changed: true, exit_changed: false,
@@ -55,7 +55,7 @@ describe('development screen', () => {
     render(<App />)
     await screen.findByTestId('node-S1')
     await user.click(screen.getByRole('button', { name: '경로 계산' }))
-    expect(await screen.findAllByText('사용 가능한 경로가 없습니다.')).toHaveLength(1)
+    expect(await screen.findAllByText('이동 가능한 경로 없음')).toHaveLength(1)
   })
 
   it('shows a structured message when map API loading fails', async () => {
@@ -97,22 +97,45 @@ describe('development screen', () => {
   })
 
   it('passes both blocked stairs and renders unreachable without zero values', async () => {
+    const demoMap = {
+      ...mapFixture,
+      id: 'seoul-station-line4-prototype-v1',
+      nodes: [
+        ...mapFixture.nodes,
+        { id: 'S3', type: 'START' as const, x: 2, y: 3, floor: 2, label: '승강장 출발점' },
+      ],
+      edges: [
+        ...mapFixture.edges,
+        { id: 'STAIR_A', source: 'S3', target: 'J1', length_m: 14, type: 'STAIR' as const, bidirectional: true },
+        { id: 'STAIR_B', source: 'S3', target: 'T1', length_m: 16, type: 'STAIR' as const, bidirectional: true },
+      ],
+    }
     const twoStairs = {
       ...scenarioFixture,
       id: 'seoul-fire-b-unreachable',
-      name: '화재 B · 모든 가정 계단 차단',
+      name: '대피 경로 없음 테스트 · 계단 A+B 차단',
+      description: 'S3에서 두 계단을 모두 차단합니다.',
+      map_id: demoMap.id,
+      start_node_id: 'S3',
       conditions: { blocked_edge_ids: ['STAIR_A', 'STAIR_B'], blocked_exit_ids: [], congestion_delays: {} },
     }
-    const fetchMock = installFetch(unreachableFixture, [twoStairs])
+    const fetchMock = installFetch(unreachableFixture, [twoStairs], demoMap)
     const user = userEvent.setup()
     render(<App />)
     await screen.findByTestId('node-S1')
     await user.selectOptions(screen.getByLabelText('시나리오 선택'), twoStairs.id)
+    expect(screen.getByLabelText('시작 위치 선택')).toHaveValue('S3')
+    expect(screen.getByTestId('edge-STAIR_A').querySelector('.is-blocked')).toBeInTheDocument()
+    expect(screen.getByTestId('edge-STAIR_B').querySelector('.is-blocked')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '기본 경로와 비교' }))
-    expect((await screen.findAllByText('사용 가능한 경로가 없습니다.')).length).toBeGreaterThan(0)
+    expect(await screen.findByText('이동 가능한 경로 없음')).toBeInTheDocument()
     expect(screen.queryByText('0m')).not.toBeInTheDocument()
+    expect(screen.getByTestId('baseline-A01')).toBeInTheDocument()
+    expect(document.querySelector('.route-scenario')).not.toBeInTheDocument()
     const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/api/routes/compare'))
-    expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ blocked_edge_ids: ['STAIR_A', 'STAIR_B'] })
+    expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({
+      start_node_id: 'S3', blocked_edge_ids: ['STAIR_A', 'STAIR_B'],
+    })
   })
 
   it('restores default in-memory controls after a browser-style remount', async () => {

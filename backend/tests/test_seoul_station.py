@@ -124,3 +124,11 @@ def test_existing_api_payload_without_stair_speed_remains_compatible(client):
     })
     assert response.status_code == 200
     assert response.json()["applied_conditions"]["stair_speed_mps"] is None
+
+
+def test_unreachable_demo_scenario_is_exposed_for_s3(client):
+    scenarios = {item["id"]: item for item in client.get("/api/scenarios").json()}
+    scenario = scenarios["seoul-fire-b-unreachable"]
+    assert scenario["name"] == "대피 경로 없음 테스트 · 계단 A+B 차단"
+    assert scenario["start_node_id"] == "S3"
+    assert scenario["conditions"]["blocked_edge_ids"] == ["STAIR_A", "STAIR_B"]

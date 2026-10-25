@@ -14,7 +14,7 @@ const emptyConditions = (): ScenarioConditions => ({
 
 function resultText(route: RouteResult | null): string {
   if (!route) return '아직 계산하지 않았습니다.'
-  if (!route.reachable) return '사용 가능한 경로가 없습니다.'
+  if (!route.reachable) return '이동 가능한 경로 없음'
   return `${displayExit(route.selected_exit_id)} · ${route.distance_m}m · ${route.total_time_s}초`
 }
 
@@ -78,6 +78,7 @@ export default function App() {
       setSelectedMapId(selected.map_id)
       setStartNodeId(selected.start_node_id)
     }
+    if (selected.id === 'seoul-fire-b-unreachable') setStartNodeId(selected.start_node_id)
     setConditions(selected.conditions)
     setRoute(null)
     setComparison(null)
@@ -225,6 +226,7 @@ export default function App() {
       )}
 
       {mapData?.metadata.safety_notice && <p className="notice">{mapData.metadata.safety_notice}</p>}
+      {selectedScenario && <p className="scenario-description"><strong>{selectedScenario.name}</strong> · {selectedScenario.description}</p>}
       {selectedScenario?.assumption_notice && <p className="notice scenario-notice">{selectedScenario.assumption_notice}</p>}
 
       <section className="results" aria-label="계산 결과">
