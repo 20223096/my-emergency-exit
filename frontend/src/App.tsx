@@ -15,7 +15,32 @@ const emptyConditions = (): ScenarioConditions => ({
 function resultText(route: RouteResult | null): string {
   if (!route) return '아직 계산하지 않았습니다.'
   if (!route.reachable) return '사용 가능한 경로가 없습니다.'
-  return `${route.selected_exit_id} · ${route.distance_m}m · ${route.total_time_s}초`
+  return `${displayExit(route.selected_exit_id)} · ${route.distance_m}m · ${route.total_time_s}초`
+}
+
+function displayExit(exitId: string | null): string {
+  const match = exitId?.match(/^EXIT_(\d+)$/)
+  return match ? `${match[1]}번 출구` : exitId || '—'
+}
+
+function RouteCard({ title, route, tone }: { title: string; route: RouteResult | null; tone: 'baseline' | 'scenario' }) {
+  const status = !route ? '대기' : route.reachable ? '이동 가능' : '경로 없음'
+  return (
+    <article className={`route-card ${tone}${route && !route.reachable ? ' unreachable' : ''}`}>
+      <div className="card-heading"><span>{title}</span><em>{status}</em></div>
+      {!route || !route.reachable ? (
+        <strong className="route-summary">{resultText(route)}</strong>
+      ) : (
+        <>
+          <strong className="route-exit">{displayExit(route.selected_exit_id)}</strong>
+          <dl>
+            <div><dt>거리</dt><dd>{route.distance_m}m</dd></div>
+            <div><dt>모의 총시간</dt><dd>{route.total_time_s}초</dd></div>
+          </dl>
+        </>
+      )}
+    </article>
+  )
 }
 
 export default function App() {
@@ -203,12 +228,20 @@ export default function App() {
       {selectedScenario?.assumption_notice && <p className="notice scenario-notice">{selectedScenario.assumption_notice}</p>}
 
       <section className="results" aria-label="계산 결과">
-        <article><span>계산 경로</span><strong>{resultText(route)}</strong></article>
-        <article><span>기본 경로</span><strong>{resultText(comparison?.baseline || null)}</strong></article>
-        <article><span>변경 경로</span><strong>{resultText(comparison?.scenario || null)}</strong></article>
-        <article><span>출구 변경</span><strong>{comparison ? (comparison.exit_changed ? '변경됨' : '동일') : '—'}</strong></article>
-        <article><span>거리 변화</span><strong>{comparison?.distance_delta_m == null ? '—' : `${comparison.distance_delta_m >= 0 ? '+' : ''}${comparison.distance_delta_m}m`}</strong></article>
-        <article><span>시간 변화</span><strong>{comparison?.total_time_delta_s == null ? '—' : `${comparison.total_time_delta_s >= 0 ? '+' : ''}${comparison.total_time_delta_s}초`}</strong></article>
+        <div className="results-heading">
+          <div><span>ROUTE COMPARISON</span><h2>경로 비교 결과</h2></div>
+          <strong>{selectedScenario?.name || (Object.keys(conditions.congestion_delays).length ? '혼잡 조건 비교' : '기본 조건')}</strong>
+        </div>
+        <div className="route-cards">
+          <RouteCard title="기본 경로" route={comparison?.baseline || route} tone="baseline" />
+          <div className="comparison-arrow" aria-hidden="true">→</div>
+          <RouteCard title={selectedScenario?.name || '변경 경로'} route={comparison?.scenario || null} tone="scenario" />
+        </div>
+        <div className="delta-cards">
+          <article><span>출구</span><strong>{comparison ? (comparison.exit_changed ? '변경됨' : '동일') : '—'}</strong></article>
+          <article><span>우회 거리</span><strong>{comparison?.distance_delta_m == null ? '—' : `${comparison.distance_delta_m >= 0 ? '+' : ''}${comparison.distance_delta_m}m`}</strong></article>
+          <article><span>시간 변화</span><strong>{comparison?.total_time_delta_s == null ? '—' : `${comparison.total_time_delta_s >= 0 ? '+' : ''}${comparison.total_time_delta_s}초`}</strong></article>
+        </div>
         {comparison?.change_reasons.map((reason) => <p key={reason} className="reason">{reason}</p>)}
       </section>
 

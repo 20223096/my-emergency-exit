@@ -5,6 +5,54 @@ export interface EdgeGeometry {
   midpoint: { x: number; y: number }
 }
 
+export interface NodeLabelLayout {
+  x: number
+  y: number
+  anchor: 'start' | 'middle' | 'end'
+  width: number
+}
+
+interface LabelBox {
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
+
+function boxesOverlap(a: LabelBox, b: LabelBox): boolean {
+  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+}
+
+/** Greedy presentation-only layout; graph coordinates and routing data stay unchanged. */
+export function getNodeLabelLayouts(nodes: MapNode[], labels: Map<string, string>): Map<string, NodeLabelLayout> {
+  const occupied: LabelBox[] = []
+  const layouts = new Map<string, NodeLabelLayout>()
+  const ordered = [...nodes].sort((a, b) => {
+    const priority = (node: MapNode) => node.type === 'EXIT' ? 0 : node.type === 'START' ? 1 : node.type === 'STAIR' ? 2 : 3
+    return priority(a) - priority(b) || a.y - b.y || a.x - b.x
+  })
+
+  for (const node of ordered) {
+    const label = labels.get(node.id) || node.label
+    const width = Math.min(Math.max(label.length * 0.135 + 0.35, 0.9), 2.7)
+    const height = 0.46
+    const candidates: NodeLabelLayout[] = [
+      { x: node.x, y: node.y - 0.55, anchor: 'middle', width },
+      { x: node.x, y: node.y + 0.78, anchor: 'middle', width },
+      { x: node.x + 0.48, y: node.y + 0.08, anchor: 'start', width },
+      { x: node.x - 0.48, y: node.y + 0.08, anchor: 'end', width },
+    ]
+    const toBox = (candidate: NodeLabelLayout): LabelBox => {
+      const left = candidate.anchor === 'middle' ? candidate.x - width / 2 : candidate.anchor === 'start' ? candidate.x : candidate.x - width
+      return { left, right: left + width, top: candidate.y - height * 0.72, bottom: candidate.y + height * 0.28 }
+    }
+    const selected = candidates.find((candidate) => !occupied.some((box) => boxesOverlap(toBox(candidate), box))) || candidates[0]
+    occupied.push(toBox(selected))
+    layouts.set(node.id, selected)
+  }
+  return layouts
+}
+
 export function getViewBox(nodes: MapNode[], padding = 1.5): string {
   if (nodes.length === 0) return '0 0 1 1'
   const xs = nodes.map((node) => node.x)

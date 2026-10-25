@@ -1,5 +1,13 @@
 import type { IndoorMap, RouteResult } from '../types/api'
-import { getEdgeGeometry, getViewBox } from '../utils/mapGeometry'
+import { getEdgeGeometry, getNodeLabelLayouts, getViewBox } from '../utils/mapGeometry'
+
+function displayNodeLabel(id: string, label: string): string {
+  const exitMatch = id.match(/^EXIT_(\d+)$/)
+  if (exitMatch) return `${exitMatch[1]}번 출구`
+  if (/^S\d+$/.test(id)) return `${id} · ${label}`
+  if (id.startsWith('STAIR_')) return label.replace(/승강장측|대합실측/g, '').trim()
+  return label
+}
 
 interface MapCanvasProps {
   mapData: IndoorMap
@@ -36,6 +44,9 @@ export function MapCanvas({
   const blockedEdges = new Set(blockedEdgeIds)
   const blockedExits = new Set(blockedExitIds)
   const hazardEdges = new Set(hazardEdgeIds)
+  const displayLabels = new Map(visibleNodes.map((node) => [node.id, displayNodeLabel(node.id, node.label)]))
+  const labelLayouts = getNodeLabelLayouts(visibleNodes, displayLabels)
+  const isSeoulPrototype = mapData.id === 'seoul-station-line4-prototype-v1'
 
   return (
     <section className="map-panel" aria-label="실험용 공간 지도">
@@ -58,7 +69,22 @@ export function MapCanvas({
           <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
             <path d="M 0 0 L 10 5 L 0 10 z" className="direction-arrow" />
           </marker>
+          <pattern id="stair-pattern" width="0.22" height="0.22" patternUnits="userSpaceOnUse">
+            <path d="M 0 .18 H .14 V .08 H .22" fill="none" stroke="#79549d" strokeWidth=".035" />
+          </pattern>
         </defs>
+
+        {isSeoulPrototype && (
+          <g className="map-zones" aria-label="단순화 공간 구역">
+            <rect className="zone zone-concourse" x="-0.55" y="-.15" width="11.1" height="6.45" rx=".28" />
+            <text className="zone-label" x="9.85" y="5.85">대합실 · B1 단순화 영역</text>
+            <rect className="zone zone-transfer" x=".1" y="3.7" width="4.05" height="2.35" rx=".28" />
+            <text className="zone-label" x=".35" y="4.15">1호선 환승 연결 구간</text>
+            <rect className="zone zone-platform" x="2.65" y="6.75" width="3.95" height="2.05" rx=".28" />
+            <text className="zone-label" x="2.9" y="8.55">4호선 승강장 · B2</text>
+            <rect className="stair-zone" x="3.05" y="4.65" width="3.05" height="3.2" rx=".2" />
+          </g>
+        )}
 
         <g aria-label="간선">
           {visibleEdges.map((edge) => {
@@ -88,7 +114,13 @@ export function MapCanvas({
                     <path d={`M ${geometry.midpoint.x + 0.18} ${geometry.midpoint.y - 0.18} L ${geometry.midpoint.x - 0.18} ${geometry.midpoint.y + 0.18}`} />
                   </g>
                 )}
-                {hazard && <text x={geometry.midpoint.x} y={geometry.midpoint.y + 0.35} className="fire-label">🔥 화재 가정</text>}
+                {hazard && (
+                  <g className="fire-marker" aria-label={`${edge.id} 화재 가정 위치`}>
+                    <circle cx={geometry.midpoint.x} cy={geometry.midpoint.y} r=".27" />
+                    <text x={geometry.midpoint.x} y={geometry.midpoint.y + 0.08}>!</text>
+                    <text x={geometry.midpoint.x} y={geometry.midpoint.y + 0.55} className="fire-label">화재 가정</text>
+                  </g>
+                )}
               </g>
             )
           })}
@@ -109,13 +141,26 @@ export function MapCanvas({
           {visibleNodes.map((node) => {
             const closed = blockedExits.has(node.id)
             const selected = selectedStartNodeId === node.id
+            const label = displayLabels.get(node.id) || node.label
+            const layout = labelLayouts.get(node.id)
             return (
               <g key={node.id} data-testid={`node-${node.id}`} className={`map-node node-${node.type.toLowerCase()}${selected ? ' is-selected' : ''}${closed ? ' is-closed' : ''}`}>
                 <circle cx={node.x} cy={node.y} r={selected ? 0.34 : 0.27}>
                   <title>{`${node.id}: ${node.label}, ${node.floor}층, ${node.type}`}</title>
                 </circle>
                 {closed && <path className="closed-cross" d={`M ${node.x - 0.25} ${node.y - 0.25} L ${node.x + 0.25} ${node.y + 0.25} M ${node.x + 0.25} ${node.y - 0.25} L ${node.x - 0.25} ${node.y + 0.25}`} />}
-                <text x={node.x} y={node.y - 0.43} className="node-label">{node.id} · {node.floor}F</text>
+                {layout && (
+                  <g className="node-label-group">
+                    <rect
+                      x={layout.anchor === 'middle' ? layout.x - layout.width / 2 : layout.anchor === 'start' ? layout.x : layout.x - layout.width}
+                      y={layout.y - 0.34}
+                      width={layout.width}
+                      height=".45"
+                      rx=".1"
+                    />
+                    <text x={layout.x} y={layout.y} textAnchor={layout.anchor} className="node-label">{label}</text>
+                  </g>
+                )}
               </g>
             )
           })}

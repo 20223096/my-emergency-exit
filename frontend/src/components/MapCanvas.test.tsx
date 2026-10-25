@@ -49,6 +49,26 @@ describe('MapCanvas', () => {
   it('marks a fire location as a simulation hazard', () => {
     render(<MapCanvas mapData={mapFixture} hazardEdgeIds={['A01']} />)
     expect(screen.getByTestId('edge-A01').querySelector('.is-hazard')).toBeInTheDocument()
-    expect(screen.getByText('🔥 화재 가정')).toBeInTheDocument()
+    expect(screen.getByLabelText('A01 화재 가정 위치')).toBeInTheDocument()
+    expect(screen.getByText('화재 가정')).toBeInTheDocument()
+  })
+
+  it('shows Seoul exit names without replacing the API ID', () => {
+    const seoulMap = {
+      ...mapFixture,
+      id: 'seoul-station-line4-prototype-v1',
+      nodes: mapFixture.nodes.map((node) => node.id === 'E1'
+        ? { ...node, id: 'EXIT_11', label: '11번 출구 후보' }
+        : node),
+      edges: mapFixture.edges.map((edge) => ({
+        ...edge,
+        source: edge.source === 'E1' ? 'EXIT_11' : edge.source,
+        target: edge.target === 'E1' ? 'EXIT_11' : edge.target,
+      })),
+    }
+    render(<MapCanvas mapData={seoulMap} />)
+    expect(screen.getByTestId('node-EXIT_11')).toBeInTheDocument()
+    expect(screen.getByText('11번 출구')).toBeInTheDocument()
+    expect(screen.getByText('EXIT_11: 11번 출구 후보, 1층, EXIT')).toBeInTheDocument()
   })
 })

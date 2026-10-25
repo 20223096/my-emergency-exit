@@ -8,11 +8,11 @@ function jsonResponse(data: unknown, status = 200) {
   return Promise.resolve(new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } }))
 }
 
-function installFetch(routeResult = routeFixture) {
+function installFetch(routeResult = routeFixture, availableScenarios = [scenarioFixture]) {
   return vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
     const url = String(input)
     if (url.endsWith('/api/maps')) return jsonResponse([{ id: mapFixture.id, name: '가상 지도', description: 'test', experimental: true }])
-    if (url.endsWith('/api/scenarios')) return jsonResponse([scenarioFixture])
+    if (url.endsWith('/api/scenarios')) return jsonResponse(availableScenarios)
     if (url.includes(`/api/maps/${mapFixture.id}`)) return jsonResponse(mapFixture)
     if (url.endsWith('/api/routes/calculate')) return jsonResponse(routeResult)
     if (url.endsWith('/api/routes/compare')) return jsonResponse({
@@ -55,7 +55,7 @@ describe('development screen', () => {
     render(<App />)
     await screen.findByTestId('node-S1')
     await user.click(screen.getByRole('button', { name: '경로 계산' }))
-    expect(await screen.findByText('사용 가능한 경로가 없습니다.')).toBeInTheDocument()
+    expect(await screen.findAllByText('사용 가능한 경로가 없습니다.')).toHaveLength(1)
   })
 
   it('shows a structured message when map API loading fails', async () => {
@@ -93,6 +93,43 @@ describe('development screen', () => {
     })
     await user.click(screen.getByRole('button', { name: '초기화' }))
     expect(screen.getByLabelText('혼잡 구간 선택')).toHaveValue('')
-    expect(screen.getAllByText('아직 계산하지 않았습니다.')).toHaveLength(3)
+    expect(screen.getAllByText('아직 계산하지 않았습니다.')).toHaveLength(2)
+  })
+
+  it('passes both blocked stairs and renders unreachable without zero values', async () => {
+    const twoStairs = {
+      ...scenarioFixture,
+      id: 'seoul-fire-b-unreachable',
+      name: '화재 B · 모든 가정 계단 차단',
+      conditions: { blocked_edge_ids: ['STAIR_A', 'STAIR_B'], blocked_exit_ids: [], congestion_delays: {} },
+    }
+    const fetchMock = installFetch(unreachableFixture, [twoStairs])
+    const user = userEvent.setup()
+    render(<App />)
+    await screen.findByTestId('node-S1')
+    await user.selectOptions(screen.getByLabelText('시나리오 선택'), twoStairs.id)
+    await user.click(screen.getByRole('button', { name: '기본 경로와 비교' }))
+    expect((await screen.findAllByText('사용 가능한 경로가 없습니다.')).length).toBeGreaterThan(0)
+    expect(screen.queryByText('0m')).not.toBeInTheDocument()
+    const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/api/routes/compare'))
+    expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({ blocked_edge_ids: ['STAIR_A', 'STAIR_B'] })
+  })
+
+  it('restores default in-memory controls after a browser-style remount', async () => {
+    installFetch()
+    const user = userEvent.setup()
+    const first = render(<App />)
+    await screen.findByTestId('node-S1')
+    await user.selectOptions(screen.getByLabelText('시나리오 선택'), scenarioFixture.id)
+    await user.clear(screen.getByLabelText('혼잡 추가 지연'))
+    await user.type(screen.getByLabelText('혼잡 추가 지연'), '77')
+    first.unmount()
+
+    render(<App />)
+    await screen.findByTestId('node-S1')
+    expect(screen.getByLabelText('시나리오 선택')).toHaveValue('')
+    expect(screen.getByLabelText('혼잡 추가 지연')).toHaveValue(30)
+    expect(screen.getByLabelText('평지 이동속도')).toHaveValue(1.2)
+    expect(screen.getByLabelText('계단 이동속도')).toHaveValue(0.8)
   })
 })
