@@ -10,44 +10,144 @@ export interface NodeLabelLayout {
   y: number
   anchor: 'start' | 'middle' | 'end'
   width: number
+  height: number
+  lines: string[]
+  leader: boolean
 }
 
-interface LabelBox {
+export interface LayoutObstacle {
   left: number
   right: number
   top: number
   bottom: number
 }
 
-function boxesOverlap(a: LabelBox, b: LabelBox): boolean {
-  return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+export interface LabelMeasurement {
+  width: number
+  height: number
 }
 
-/** Greedy presentation-only layout; graph coordinates and routing data stay unchanged. */
-export function getNodeLabelLayouts(nodes: MapNode[], labels: Map<string, string>): Map<string, NodeLabelLayout> {
+export interface LabelBox {
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
+
+export function boxesOverlap(a: LabelBox, b: LabelBox, gap = 0): boolean {
+  return a.left < b.right + gap && a.right > b.left - gap && a.top < b.bottom + gap && a.bottom > b.top - gap
+}
+
+function glyphUnits(text: string): number {
+  return [...text].reduce((total, character) => {
+    if (/\s/.test(character)) return total + 0.36
+    if (/[A-Z0-9]/.test(character)) return total + 0.64
+    if (/[a-z]/.test(character)) return total + 0.54
+    if (/[·→()\-]/.test(character)) return total + 0.45
+    return total + 1
+  }, 0)
+}
+
+function wrapLabel(text: string, maxUnits = 12): string[] {
+  if (glyphUnits(text) <= maxUnits) return [text]
+  const words = text.split(' ')
+  const lines: string[] = []
+  let current = ''
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word
+    if (current && glyphUnits(candidate) > maxUnits) {
+      lines.push(current)
+      current = word
+    } else {
+      current = candidate
+    }
+  }
+  if (current) lines.push(current)
+  return lines.length > 1 ? lines : [text]
+}
+
+export function getLabelBox(layout: NodeLabelLayout): LabelBox {
+  const left = layout.anchor === 'middle'
+    ? layout.x - layout.width / 2
+    : layout.anchor === 'start' ? layout.x : layout.x - layout.width
+  return { left, right: left + layout.width, top: layout.y - layout.height + 0.12, bottom: layout.y + 0.12 }
+}
+
+export function nodeObstacles(nodes: MapNode[]): LayoutObstacle[] {
+  return nodes.map((node) => ({ left: node.x - 0.39, right: node.x + 0.39, top: node.y - 0.39, bottom: node.y + 0.39 }))
+}
+
+export function countLayoutCollisions(
+  layouts: Map<string, NodeLabelLayout>,
+  obstacles: LayoutObstacle[],
+  gap = 0.08,
+): number {
+  const boxes = [...layouts.values()].map(getLabelBox)
+  let collisions = 0
+  for (let index = 0; index < boxes.length; index += 1) {
+    for (let other = index + 1; other < boxes.length; other += 1) {
+      if (boxesOverlap(boxes[index], boxes[other], gap)) collisions += 1
+    }
+    for (const obstacle of obstacles) if (boxesOverlap(boxes[index], obstacle, gap)) collisions += 1
+  }
+  return collisions
+}
+
+/** Presentation-only layout; graph coordinates and routing data stay unchanged. */
+export function getNodeLabelLayouts(
+  nodes: MapNode[],
+  labels: Map<string, string>,
+  extraObstacles: LayoutObstacle[] = [],
+  measurements: Map<string, LabelMeasurement> = new Map(),
+): Map<string, NodeLabelLayout> {
   const occupied: LabelBox[] = []
+  const fixedObstacles = [...nodeObstacles(nodes), ...extraObstacles]
   const layouts = new Map<string, NodeLabelLayout>()
   const ordered = [...nodes].sort((a, b) => {
-    const priority = (node: MapNode) => node.type === 'EXIT' ? 0 : node.type === 'START' ? 1 : node.type === 'STAIR' ? 2 : 3
+    const priority = (node: MapNode) => node.type === 'START' ? 0 : node.type === 'EXIT' ? 1 : node.type === 'STAIR' ? 2 : 3
     return priority(a) - priority(b) || a.y - b.y || a.x - b.x
   })
 
   for (const node of ordered) {
     const label = labels.get(node.id) || node.label
-    const width = Math.min(Math.max(label.length * 0.135 + 0.35, 0.9), 2.7)
-    const height = 0.46
+    const lines = wrapLabel(label)
+    const measured = measurements.get(node.id)
+    const width = measured?.width ?? Math.max(1, ...lines.map((line) => glyphUnits(line) * 0.245 + 0.34))
+    const height = measured?.height ?? (lines.length * 0.31 + 0.24)
+    const make = (x: number, y: number, anchor: NodeLabelLayout['anchor'], leader: boolean): NodeLabelLayout => (
+      { x, y, anchor, width, height, lines, leader }
+    )
     const candidates: NodeLabelLayout[] = [
-      { x: node.x, y: node.y - 0.55, anchor: 'middle', width },
-      { x: node.x, y: node.y + 0.78, anchor: 'middle', width },
-      { x: node.x + 0.48, y: node.y + 0.08, anchor: 'start', width },
-      { x: node.x - 0.48, y: node.y + 0.08, anchor: 'end', width },
+      make(node.x, node.y - 0.62, 'middle', false),
+      make(node.x, node.y + 0.62 + height, 'middle', false),
+      make(node.x + 0.55, node.y + height / 2, 'start', false),
+      make(node.x - 0.55, node.y + height / 2, 'end', false),
     ]
-    const toBox = (candidate: NodeLabelLayout): LabelBox => {
-      const left = candidate.anchor === 'middle' ? candidate.x - width / 2 : candidate.anchor === 'start' ? candidate.x : candidate.x - width
-      return { left, right: left + width, top: candidate.y - height * 0.72, bottom: candidate.y + height * 0.28 }
+    for (const radius of [1, 1.35, 1.7, 2.1, 2.55]) {
+      candidates.push(
+        make(node.x, node.y - radius, 'middle', true),
+        make(node.x, node.y + radius + height, 'middle', true),
+        make(node.x + radius, node.y + height / 2, 'start', true),
+        make(node.x - radius, node.y + height / 2, 'end', true),
+        make(node.x + radius * 0.72, node.y - radius * 0.72, 'start', true),
+        make(node.x - radius * 0.72, node.y - radius * 0.72, 'end', true),
+        make(node.x + radius * 0.72, node.y + radius * 0.72 + height, 'start', true),
+        make(node.x - radius * 0.72, node.y + radius * 0.72 + height, 'end', true),
+      )
     }
-    const selected = candidates.find((candidate) => !occupied.some((box) => boxesOverlap(toBox(candidate), box))) || candidates[0]
-    occupied.push(toBox(selected))
+    const isClear = (candidate: NodeLabelLayout) => {
+      const box = getLabelBox(candidate)
+      return !occupied.some((item) => boxesOverlap(box, item, 0.1))
+        && !fixedObstacles.some((item) => boxesOverlap(box, item, 0.1))
+    }
+    const selected = candidates.find(isClear) || candidates.reduce((best, candidate) => {
+      const collisionCount = [...occupied, ...fixedObstacles]
+        .filter((item) => boxesOverlap(getLabelBox(candidate), item, 0.1)).length
+      const bestCount = [...occupied, ...fixedObstacles]
+        .filter((item) => boxesOverlap(getLabelBox(best), item, 0.1)).length
+      return collisionCount < bestCount ? candidate : best
+    })
+    occupied.push(getLabelBox(selected))
     layouts.set(node.id, selected)
   }
   return layouts

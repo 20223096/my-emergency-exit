@@ -1,5 +1,6 @@
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { IndoorMap, RouteResult } from '../types/api'
-import { getEdgeGeometry, getNodeLabelLayouts, getViewBox } from '../utils/mapGeometry'
+import { getEdgeGeometry, getNodeLabelLayouts, getViewBox, type LabelMeasurement, type LayoutObstacle } from '../utils/mapGeometry'
 
 function displayNodeLabel(id: string, label: string): string {
   const exitMatch = id.match(/^EXIT_(\d+)$/)
@@ -32,6 +33,8 @@ export function MapCanvas({
   floor = null,
   hazardEdgeIds = [],
 }: MapCanvasProps) {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [labelMeasurements, setLabelMeasurements] = useState<Map<string, LabelMeasurement>>(new Map())
   const visibleNodeIds = new Set(
     mapData.nodes.filter((node) => floor === null || node.floor === floor).map((node) => node.id),
   )
@@ -45,8 +48,35 @@ export function MapCanvas({
   const blockedExits = new Set(blockedExitIds)
   const hazardEdges = new Set(hazardEdgeIds)
   const displayLabels = new Map(visibleNodes.map((node) => [node.id, displayNodeLabel(node.id, node.label)]))
-  const labelLayouts = getNodeLabelLayouts(visibleNodes, displayLabels)
   const isSeoulPrototype = mapData.id === 'seoul-station-line4-prototype-v1'
+  const statusObstacles: LayoutObstacle[] = visibleEdges.flatMap((edge) => {
+    if (!hazardEdges.has(edge.id) && !blockedEdges.has(edge.id) && !(edge.id in congestionDelays)) return []
+    const { midpoint } = getEdgeGeometry(mapData, edge)
+    const obstacles: LayoutObstacle[] = []
+    if (hazardEdges.has(edge.id)) obstacles.push({ left: midpoint.x - 0.68, right: midpoint.x + 0.68, top: midpoint.y - 0.38, bottom: midpoint.y + 0.68 })
+    if (blockedEdges.has(edge.id)) obstacles.push({ left: midpoint.x - 0.3, right: midpoint.x + 0.3, top: midpoint.y - 0.3, bottom: midpoint.y + 0.3 })
+    if (edge.id in congestionDelays) obstacles.push({ left: midpoint.x - 0.48, right: midpoint.x + 0.48, top: midpoint.y - 0.58, bottom: midpoint.y - 0.08 })
+    return obstacles
+  })
+  const labelLayouts = getNodeLabelLayouts(visibleNodes, displayLabels, statusObstacles, labelMeasurements)
+
+  useLayoutEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+    const measured = new Map<string, LabelMeasurement>()
+    svg.querySelectorAll<SVGGElement>('[data-label-id]').forEach((group) => {
+      const text = group.querySelector<SVGTextElement>('text')
+      if (!text || typeof text.getBBox !== 'function') return
+      const box = text.getBBox()
+      measured.set(group.dataset.labelId || '', { width: box.width + 0.34, height: box.height + 0.24 })
+    })
+    if (!measured.size) return
+    const changed = [...measured].some(([id, size]) => {
+      const current = labelMeasurements.get(id)
+      return !current || Math.abs(current.width - size.width) > 0.02 || Math.abs(current.height - size.height) > 0.02
+    })
+    if (changed) setLabelMeasurements(measured)
+  }, [mapData.id, floor, visibleNodes.length, hazardEdgeIds.join('|'), blockedEdgeIds.join('|'), labelMeasurements])
 
   return (
     <section className="map-panel" aria-label="실험용 공간 지도">
@@ -58,13 +88,15 @@ export function MapCanvas({
         <span className="legend-stair">계단/층 연결</span>
         <span className="legend-fire">화재 가정 위치</span>
       </div>
-      <svg
-        className="map-canvas"
-        viewBox={getViewBox(visibleNodes)}
-        role="img"
-        aria-label={`${mapData.metadata.name}${floor === null ? ' 전체 층' : ` ${floor}층`}`}
-        preserveAspectRatio="xMidYMid meet"
-      >
+      <div className="map-viewport">
+        <svg
+          ref={svgRef}
+          className="map-canvas"
+          viewBox={getViewBox(visibleNodes, isSeoulPrototype ? 2.75 : 1.8)}
+          role="img"
+          aria-label={`${mapData.metadata.name}${floor === null ? ' 전체 층' : ` ${floor}층`}`}
+          preserveAspectRatio="xMidYMid meet"
+        >
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
             <path d="M 0 0 L 10 5 L 0 10 z" className="direction-arrow" />
@@ -103,24 +135,6 @@ export function MapCanvas({
                 >
                   <title>{`${edge.id}: ${edge.source} → ${edge.target}, ${edge.length_m}m, ${edge.bidirectional ? '양방향' : '일방향'}`}</title>
                 </path>
-                {congested && (
-                  <text x={geometry.midpoint.x} y={geometry.midpoint.y - 0.18} className="edge-status-label">
-                    +{congestionDelays[edge.id]}s
-                  </text>
-                )}
-                {blocked && (
-                  <g className="blocked-cross" aria-label={`${edge.id} 차단`}>
-                    <path d={`M ${geometry.midpoint.x - 0.18} ${geometry.midpoint.y - 0.18} L ${geometry.midpoint.x + 0.18} ${geometry.midpoint.y + 0.18}`} />
-                    <path d={`M ${geometry.midpoint.x + 0.18} ${geometry.midpoint.y - 0.18} L ${geometry.midpoint.x - 0.18} ${geometry.midpoint.y + 0.18}`} />
-                  </g>
-                )}
-                {hazard && (
-                  <g className="fire-marker" aria-label={`${edge.id} 화재 가정 위치`}>
-                    <circle cx={geometry.midpoint.x} cy={geometry.midpoint.y} r=".27" />
-                    <text x={geometry.midpoint.x} y={geometry.midpoint.y + 0.08}>!</text>
-                    <text x={geometry.midpoint.x} y={geometry.midpoint.y + 0.55} className="fire-label">화재 가정</text>
-                  </g>
-                )}
               </g>
             )
           })}
@@ -137,6 +151,35 @@ export function MapCanvas({
           ))}
         </g>
 
+        <g aria-label="통로 상태 표식">
+          {visibleEdges.filter((edge) => blockedEdges.has(edge.id) || hazardEdges.has(edge.id) || edge.id in congestionDelays).map((edge) => {
+            const geometry = getEdgeGeometry(mapData, edge)
+            return (
+              <g key={`status-${edge.id}`}>
+                {edge.id in congestionDelays && (
+                  <text x={geometry.midpoint.x} y={geometry.midpoint.y - 0.18} className="edge-status-label">
+                    +{congestionDelays[edge.id]}s
+                  </text>
+                )}
+                {blockedEdges.has(edge.id) && (
+                  <g className="blocked-cross" aria-label={`${edge.id} 차단`}>
+                    <circle cx={geometry.midpoint.x} cy={geometry.midpoint.y} r=".25" />
+                    <path d={`M ${geometry.midpoint.x - 0.16} ${geometry.midpoint.y - 0.16} L ${geometry.midpoint.x + 0.16} ${geometry.midpoint.y + 0.16}`} />
+                    <path d={`M ${geometry.midpoint.x + 0.16} ${geometry.midpoint.y - 0.16} L ${geometry.midpoint.x - 0.16} ${geometry.midpoint.y + 0.16}`} />
+                  </g>
+                )}
+                {hazardEdges.has(edge.id) && (
+                  <g className="fire-marker" aria-label={`${edge.id} 화재 가정 위치`}>
+                    <circle cx={geometry.midpoint.x} cy={geometry.midpoint.y} r=".27" />
+                    <text x={geometry.midpoint.x} y={geometry.midpoint.y + 0.08}>!</text>
+                    <text x={geometry.midpoint.x} y={geometry.midpoint.y + 0.55} className="fire-label">화재 가정</text>
+                  </g>
+                )}
+              </g>
+            )
+          })}
+        </g>
+
         <g aria-label="노드">
           {visibleNodes.map((node) => {
             const closed = blockedExits.has(node.id)
@@ -150,22 +193,30 @@ export function MapCanvas({
                 </circle>
                 {closed && <path className="closed-cross" d={`M ${node.x - 0.25} ${node.y - 0.25} L ${node.x + 0.25} ${node.y + 0.25} M ${node.x + 0.25} ${node.y - 0.25} L ${node.x - 0.25} ${node.y + 0.25}`} />}
                 {layout && (
-                  <g className="node-label-group">
+                  <g className="node-label-group" data-label-id={node.id}>
+                    {layout.leader && (
+                      <line className="label-leader" x1={node.x} y1={node.y} x2={layout.x} y2={layout.y - layout.height / 2} />
+                    )}
                     <rect
                       x={layout.anchor === 'middle' ? layout.x - layout.width / 2 : layout.anchor === 'start' ? layout.x : layout.x - layout.width}
-                      y={layout.y - 0.34}
+                      y={layout.y - layout.height + 0.08}
                       width={layout.width}
-                      height=".45"
+                      height={layout.height}
                       rx=".1"
                     />
-                    <text x={layout.x} y={layout.y} textAnchor={layout.anchor} className="node-label">{label}</text>
+                    <text x={layout.x} y={layout.y - (layout.lines.length - 1) * 0.31} textAnchor={layout.anchor} className="node-label">
+                      {layout.lines.map((line, index) => (
+                        <tspan key={`${node.id}-${index}`} x={layout.x} dy={index === 0 ? 0 : 0.31}>{line}</tspan>
+                      ))}
+                    </text>
                   </g>
                 )}
               </g>
             )
           })}
         </g>
-      </svg>
+        </svg>
+      </div>
     </section>
   )
 }

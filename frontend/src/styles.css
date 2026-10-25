@@ -27,13 +27,14 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .legend-congested::before { background: #e59b17 !important; }
 .legend-stair::before { background: #79549d !important; }
 .legend-fire::before { background: #d13422 !important; }
-.map-canvas { display: block; width: 100%; height: clamp(390px, 63vh, 680px); background: #fff; border-radius: 5px; }
+.map-viewport { width: 100%; overflow: auto; border-radius: 5px; background: #fff; scrollbar-gutter: stable; }
+.map-canvas { display: block; width: 100%; height: clamp(430px, 66vh, 720px); background: #fff; border-radius: 5px; }
 .zone { vector-effect: non-scaling-stroke; stroke-width: 1.2px; }
 .zone-concourse { fill: #f2f6f3; stroke: #b9c9c3; }
 .zone-transfer { fill: #e7f3ef; stroke: #7ba99b; }
 .zone-platform { fill: #eef1f8; stroke: #8797bd; }
 .stair-zone { fill: url(#stair-pattern); opacity: .24; stroke: #79549d; stroke-width: .06; }
-.zone-label { font-size: .24px; font-weight: 800; letter-spacing: .025em; fill: #61706b; pointer-events: none; }
+.zone-label { font-size: .24px; font-weight: 800; letter-spacing: .025em; fill: #61706b; paint-order: stroke; stroke: rgba(255,255,255,.9); stroke-width: .1; pointer-events: none; }
 .map-edge { fill: none; stroke: #87948f; stroke-width: .13; vector-effect: non-scaling-stroke; }
 .map-edge.is-congested { stroke: #e08a00; stroke-width: .23; }
 .map-edge.is-blocked { stroke: #8d2630; stroke-width: .25; stroke-dasharray: .22 .13; }
@@ -52,10 +53,12 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .node-label, .edge-status-label, .fire-label { font-size: .23px; fill: #26332f; pointer-events: none; }
 .node-label { font-weight: 750; }
 .node-label-group rect { fill: rgba(255, 255, 255, .92); stroke: #c6d0cc; stroke-width: .025; }
+.label-leader { stroke: #71807b; stroke-width: .055; stroke-dasharray: .12 .07; vector-effect: non-scaling-stroke; }
 .fire-marker circle { fill: #e03c28; stroke: #fff; stroke-width: .07; }
 .fire-marker > text:not(.fire-label) { fill: #fff; font-size: .25px; font-weight: 900; text-anchor: middle; }
 .fire-label { fill: #a82216; font-weight: 900; text-anchor: middle; paint-order: stroke; stroke: #fff; stroke-width: .08; }
 .edge-status-label { fill: #a86300; font-weight: 800; }
+.blocked-cross circle { fill: #fff; stroke: #7e1621; stroke-width: .07; }
 .blocked-cross path, .closed-cross { stroke: #7e1621; stroke-width: .17; vector-effect: non-scaling-stroke; }
 .results { margin-top: 18px; padding: 20px; background: #f9faf7; border: 1px solid #c8d2ce; border-radius: 8px; }
 .results-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
@@ -84,6 +87,6 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .scenario-notice { border-left-color: #b73535; }
 .scenario-description { margin: 12px 0 0; padding: 12px 14px; border: 1px solid #c8d2ce; border-radius: 5px; background: #fff; font-size: .84rem; }
 footer { color: #687570; font-size: .75rem; padding: 20px 0; }
-@media (max-width: 980px) { .controls { grid-template-columns: repeat(3, 1fr); } .map-canvas { height: clamp(380px, 58vh, 560px); } }
-@media (max-width: 720px) { .controls { grid-template-columns: 1fr 1fr; } .route-cards { grid-template-columns: 1fr; } .comparison-arrow { transform: rotate(90deg); min-height: 18px; } .map-canvas { height: 430px; } }
-@media (max-width: 480px) { .app-shell { width: min(100% - 20px, 1180px); padding-top: 24px; } header h1 { font-size: 2.15rem; } .controls { grid-template-columns: 1fr; } .button-row { flex-direction: column; } .button-row button { width: 100%; } .legend { gap: 9px 12px; } .map-panel { padding: 8px; } .map-canvas { height: 390px; } .results { padding: 14px; } .results-heading { align-items: start; flex-direction: column; } .results-heading > strong { text-align: left; } .delta-cards { grid-template-columns: 1fr; } }
+@media (max-width: 1024px) { .controls { grid-template-columns: repeat(3, 1fr); } .map-canvas { height: clamp(430px, 62vh, 610px); } }
+@media (max-width: 720px) { .controls { grid-template-columns: 1fr 1fr; } .route-cards { grid-template-columns: 1fr; } .comparison-arrow { transform: rotate(90deg); min-height: 18px; } .map-canvas { width: 760px; height: 500px; max-width: none; } .map-viewport::after { content: '지도를 좌우로 스크롤할 수 있습니다.'; position: sticky; left: 10px; display: inline-block; padding: 5px 8px; margin: 0 0 8px 8px; border-radius: 4px; background: rgba(24,35,33,.78); color: #fff; font-size: .68rem; } }
+@media (max-width: 480px) { .app-shell { width: min(100% - 20px, 1180px); padding-top: 24px; } header h1 { font-size: 2.15rem; } .controls { grid-template-columns: 1fr; } .button-row { flex-direction: column; } .button-row button { width: 100%; } .legend { gap: 9px 12px; } .map-panel { padding: 8px; } .map-canvas { width: 740px; height: 480px; } .results { padding: 14px; } .results-heading { align-items: start; flex-direction: column; } .results-heading > strong { text-align: left; } .delta-cards { grid-template-columns: 1fr; } }
