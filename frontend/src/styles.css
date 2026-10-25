@@ -66,6 +66,8 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .results-heading h2 { margin: 4px 0 0; font-size: 1.25rem; }
 .results-heading > strong { color: #5d6864; font-size: .82rem; text-align: right; }
 .route-cards { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 14px; }
+.standalone-result { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .7fr); align-items: center; gap: 16px; }
+.standalone-result > p { margin: 0; padding: 16px; border-left: 3px solid #e04722; background: #fff4ee; color: #56635f; font-size: .84rem; line-height: 1.6; }
 .route-card { min-width: 0; padding: 18px; border: 1px solid #c7d4e4; border-top: 5px solid #1260c4; border-radius: 7px; background: #fff; }
 .route-card.scenario { border-color: #ead0c8; border-top-color: #e04722; }
 .route-card.unreachable { border-top-color: #8d2630; background: #fff7f7; }
@@ -88,5 +90,5 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .scenario-description { margin: 12px 0 0; padding: 12px 14px; border: 1px solid #c8d2ce; border-radius: 5px; background: #fff; font-size: .84rem; }
 footer { color: #687570; font-size: .75rem; padding: 20px 0; }
 @media (max-width: 1024px) { .controls { grid-template-columns: repeat(3, 1fr); } .map-canvas { height: clamp(430px, 62vh, 610px); } }
-@media (max-width: 720px) { .controls { grid-template-columns: 1fr 1fr; } .route-cards { grid-template-columns: 1fr; } .comparison-arrow { transform: rotate(90deg); min-height: 18px; } .map-canvas { width: 760px; height: 500px; max-width: none; } .map-viewport::after { content: '지도를 좌우로 스크롤할 수 있습니다.'; position: sticky; left: 10px; display: inline-block; padding: 5px 8px; margin: 0 0 8px 8px; border-radius: 4px; background: rgba(24,35,33,.78); color: #fff; font-size: .68rem; } }
+@media (max-width: 720px) { .controls { grid-template-columns: 1fr 1fr; } .route-cards, .standalone-result { grid-template-columns: 1fr; } .comparison-arrow { transform: rotate(90deg); min-height: 18px; } .map-canvas { width: 760px; height: 500px; max-width: none; } .map-viewport::after { content: '지도를 좌우로 스크롤할 수 있습니다.'; position: sticky; left: 10px; display: inline-block; padding: 5px 8px; margin: 0 0 8px 8px; border-radius: 4px; background: rgba(24,35,33,.78); color: #fff; font-size: .68rem; } }
 @media (max-width: 480px) { .app-shell { width: min(100% - 20px, 1180px); padding-top: 24px; } header h1 { font-size: 2.15rem; } .controls { grid-template-columns: 1fr; } .button-row { flex-direction: column; } .button-row button { width: 100%; } .legend { gap: 9px 12px; } .map-panel { padding: 8px; } .map-canvas { width: 740px; height: 480px; } .results { padding: 14px; } .results-heading { align-items: start; flex-direction: column; } .results-heading > strong { text-align: left; } .delta-cards { grid-template-columns: 1fr; } }

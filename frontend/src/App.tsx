@@ -69,6 +69,8 @@ export default function App() {
 
   const selectScenario = (id: string) => {
     setScenarioId(id)
+    setRoute(null)
+    setComparison(null)
     const selected = scenarios.find((scenario) => scenario.id === id)
     if (!selected) {
       setConditions(emptyConditions())
@@ -80,8 +82,13 @@ export default function App() {
     }
     if (selected.id === 'seoul-fire-b-unreachable') setStartNodeId(selected.start_node_id)
     setConditions(selected.conditions)
+  }
+
+  const changeStart = (startId: string) => {
+    setStartNodeId(startId)
     setRoute(null)
     setComparison(null)
+    setActionError(null)
   }
 
   const requestBody = (): RouteRequest => ({
@@ -134,11 +141,13 @@ export default function App() {
     setActionError(null)
     try {
       if (kind === 'calculate') {
-        setRoute(await calculateRoute(requestBody()))
+        const result = await calculateRoute(requestBody())
+        setComparison(null)
+        setRoute(result)
       } else {
         const result = await compareRoutes(requestBody())
         setComparison(result)
-        setRoute(result.scenario)
+        setRoute(null)
       }
     } catch (reason) {
       setActionError(reason instanceof ApiError ? reason : new ApiError('경로 요청에 실패했습니다.', 'server', null, reason))
@@ -164,7 +173,7 @@ export default function App() {
           </select>
         </label>
         <label>시작 위치
-          <select aria-label="시작 위치 선택" value={startNodeId} onChange={(event) => setStartNodeId(event.target.value)}>
+          <select aria-label="시작 위치 선택" value={startNodeId} onChange={(event) => changeStart(event.target.value)}>
             {starts.map((node) => <option key={node.id} value={node.id}>{node.id} · {node.label}</option>)}
           </select>
         </label>
@@ -215,7 +224,7 @@ export default function App() {
         <MapCanvas
           mapData={mapData}
           baselineRoute={comparison?.baseline}
-          scenarioRoute={comparison?.scenario || route}
+          scenarioRoute={comparison?.scenario || (!comparison ? route : null)}
           blockedEdgeIds={conditions.blocked_edge_ids}
           blockedExitIds={conditions.blocked_exit_ids}
           congestionDelays={conditions.congestion_delays}
@@ -231,20 +240,29 @@ export default function App() {
 
       <section className="results" aria-label="계산 결과">
         <div className="results-heading">
-          <div><span>ROUTE COMPARISON</span><h2>경로 비교 결과</h2></div>
+          <div><span>{comparison ? 'ROUTE COMPARISON' : 'CURRENT CONDITION'}</span><h2>{comparison ? '경로 비교 결과' : '현재 조건 계산 결과'}</h2></div>
           <strong>{selectedScenario?.name || (Object.keys(conditions.congestion_delays).length ? '혼잡 조건 비교' : '기본 조건')}</strong>
         </div>
-        <div className="route-cards">
-          <RouteCard title="기본 경로" route={comparison?.baseline || route} tone="baseline" />
-          <div className="comparison-arrow" aria-hidden="true">→</div>
-          <RouteCard title={selectedScenario?.name || '변경 경로'} route={comparison?.scenario || null} tone="scenario" />
-        </div>
-        <div className="delta-cards">
-          <article><span>출구</span><strong>{comparison ? (comparison.exit_changed ? '변경됨' : '동일') : '—'}</strong></article>
-          <article><span>우회 거리</span><strong>{comparison?.distance_delta_m == null ? '—' : `${comparison.distance_delta_m >= 0 ? '+' : ''}${comparison.distance_delta_m}m`}</strong></article>
-          <article><span>시간 변화</span><strong>{comparison?.total_time_delta_s == null ? '—' : `${comparison.total_time_delta_s >= 0 ? '+' : ''}${comparison.total_time_delta_s}초`}</strong></article>
-        </div>
-        {comparison?.change_reasons.map((reason) => <p key={reason} className="reason">{reason}</p>)}
+        {comparison ? (
+          <>
+            <div className="route-cards">
+              <RouteCard title="차단 전 기본 경로" route={comparison.baseline} tone="baseline" />
+              <div className="comparison-arrow" aria-hidden="true">→</div>
+              <RouteCard title="차단 후 변경 경로" route={comparison.scenario} tone="scenario" />
+            </div>
+            <div className="delta-cards">
+              <article><span>출구</span><strong>{comparison.exit_changed ? '변경됨' : '동일'}</strong></article>
+              <article><span>우회 거리</span><strong>{comparison.distance_delta_m == null ? '—' : `${comparison.distance_delta_m >= 0 ? '+' : ''}${comparison.distance_delta_m}m`}</strong></article>
+              <article><span>시간 변화</span><strong>{comparison.total_time_delta_s == null ? '—' : `${comparison.total_time_delta_s >= 0 ? '+' : ''}${comparison.total_time_delta_s}초`}</strong></article>
+            </div>
+            {comparison.change_reasons.map((reason) => <p key={reason} className="reason">{reason}</p>)}
+          </>
+        ) : (
+          <div className="standalone-result">
+            <RouteCard title="현재 조건 계산 결과" route={route} tone="scenario" />
+            <p>현재 선택한 지도·출발점·재난·혼잡 조건을 그대로 적용한 단일 계산 결과입니다.</p>
+          </div>
+        )}
       </section>
 
       <footer>실제 재난 안내가 아닌 실험용 프로토타입입니다. 좌표는 상대 위치이며 거리·시간은 백엔드 계산값입니다.</footer>

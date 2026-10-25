@@ -47,6 +47,38 @@ describe('development screen', () => {
     const compareCall = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/api/routes/compare'))
     expect(compareCall).toBeTruthy()
     expect(JSON.parse(String(compareCall?.[1]?.body))).toMatchObject({ blocked_edge_ids: ['A01'] })
+    expect(screen.getByText('차단 전 기본 경로')).toBeInTheDocument()
+    expect(screen.getByText('차단 후 변경 경로')).toBeInTheDocument()
+  })
+
+  it('keeps a single calculation separate from before-and-after comparison cards', async () => {
+    installFetch()
+    const user = userEvent.setup()
+    render(<App />)
+    await screen.findByTestId('node-S1')
+    await user.selectOptions(screen.getByLabelText('시나리오 선택'), scenarioFixture.id)
+    await user.click(screen.getByRole('button', { name: '경로 계산' }))
+    expect((await screen.findAllByText('현재 조건 계산 결과')).length).toBeGreaterThan(0)
+    expect(screen.queryByText('차단 전 기본 경로')).not.toBeInTheDocument()
+    expect(screen.queryByText('차단 후 변경 경로')).not.toBeInTheDocument()
+  })
+
+  it('clears stale calculation results when the start or scenario changes', async () => {
+    const secondStartMap = {
+      ...mapFixture,
+      nodes: [...mapFixture.nodes, { id: 'S2', type: 'START' as const, x: 1, y: 1, floor: 1, label: '두 번째 출발점' }],
+    }
+    installFetch(routeFixture, [scenarioFixture], secondStartMap)
+    const user = userEvent.setup()
+    render(<App />)
+    await screen.findByTestId('node-S1')
+    await user.click(screen.getByRole('button', { name: '경로 계산' }))
+    expect(await screen.findByText('E1')).toBeInTheDocument()
+    await user.selectOptions(screen.getByLabelText('시작 위치 선택'), 'S2')
+    expect(screen.queryByText('E1')).not.toBeInTheDocument()
+    expect(screen.getByText('아직 계산하지 않았습니다.')).toBeInTheDocument()
+    await user.selectOptions(screen.getByLabelText('시나리오 선택'), scenarioFixture.id)
+    expect(screen.getByText('아직 계산하지 않았습니다.')).toBeInTheDocument()
   })
 
   it('shows an unreachable route without failing the screen', async () => {
@@ -93,7 +125,7 @@ describe('development screen', () => {
     })
     await user.click(screen.getByRole('button', { name: '초기화' }))
     expect(screen.getByLabelText('혼잡 구간 선택')).toHaveValue('')
-    expect(screen.getAllByText('아직 계산하지 않았습니다.')).toHaveLength(2)
+    expect(screen.getAllByText('아직 계산하지 않았습니다.')).toHaveLength(1)
   })
 
   it('passes both blocked stairs and renders unreachable without zero values', async () => {

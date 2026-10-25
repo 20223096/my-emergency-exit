@@ -6,7 +6,6 @@ function displayNodeLabel(id: string, label: string): string {
   const exitMatch = id.match(/^EXIT_(\d+)$/)
   if (exitMatch) return `${exitMatch[1]}번 출구`
   if (/^S\d+$/.test(id)) return `${id} · ${label}`
-  if (id.startsWith('STAIR_')) return label.replace(/승강장측|대합실측/g, '').trim()
   return label
 }
 
@@ -58,7 +57,14 @@ export function MapCanvas({
     if (edge.id in congestionDelays) obstacles.push({ left: midpoint.x - 0.48, right: midpoint.x + 0.48, top: midpoint.y - 0.58, bottom: midpoint.y - 0.08 })
     return obstacles
   })
-  const labelLayouts = getNodeLabelLayouts(visibleNodes, displayLabels, statusObstacles, labelMeasurements)
+  const zoneLabelObstacles: LayoutObstacle[] = isSeoulPrototype ? [
+    { left: 9.72, right: 12.35, top: 5.48, bottom: 5.98 },
+    { left: 0.22, right: 3.35, top: 3.78, bottom: 4.28 },
+    { left: 2.77, right: 5.55, top: 8.18, bottom: 8.68 },
+  ] : []
+  const labelLayouts = getNodeLabelLayouts(
+    visibleNodes, displayLabels, [...statusObstacles, ...zoneLabelObstacles], labelMeasurements,
+  )
 
   useLayoutEffect(() => {
     const svg = svgRef.current

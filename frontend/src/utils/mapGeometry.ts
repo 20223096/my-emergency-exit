@@ -123,7 +123,7 @@ export function getNodeLabelLayouts(
       make(node.x + 0.55, node.y + height / 2, 'start', false),
       make(node.x - 0.55, node.y + height / 2, 'end', false),
     ]
-    for (const radius of [1, 1.35, 1.7, 2.1, 2.55]) {
+    for (const radius of [1, 1.35, 1.7, 2.1, 2.55, 3.05, 3.55, 4.05]) {
       candidates.push(
         make(node.x, node.y - radius, 'middle', true),
         make(node.x, node.y + radius + height, 'middle', true),

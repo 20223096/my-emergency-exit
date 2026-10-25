@@ -27,10 +27,10 @@ describe('node label layout', () => {
       ['C_CENTER', 'JUNCTION', 5, 4, -1, '4호선 대합실 중앙'],
       ['C_EAST', 'JUNCTION', 7, 3, -1, '10·11번 방향 갈림길'],
       ['P_SOUTH', 'JUNCTION', 5, 8, -2, '회현 방향 승강장 구간'],
-      ['STAIR_A_LOWER', 'STAIR', 5.5, 7.5, -2, '주 계단'],
-      ['STAIR_A_UPPER', 'STAIR', 5.5, 5, -1, '주 계단'],
-      ['STAIR_B_LOWER', 'STAIR', 3.5, 7.5, -2, '대체 계단'],
-      ['STAIR_B_UPPER', 'STAIR', 3.5, 5.5, -1, '대체 계단'],
+      ['STAIR_A_LOWER', 'STAIR', 5.5, 7.5, -2, '주 계단 승강장측'],
+      ['STAIR_A_UPPER', 'STAIR', 5.5, 5, -1, '주 계단 대합실측'],
+      ['STAIR_B_LOWER', 'STAIR', 3.5, 7.5, -2, '대체 계단 승강장측'],
+      ['STAIR_B_UPPER', 'STAIR', 3.5, 5.5, -1, '대체 계단 대합실측'],
       ['X10_APPROACH', 'JUNCTION', 9, 2.5, -1, '10번 출구 접근부'],
       ['X11_APPROACH', 'JUNCTION', 7, 1.5, -1, '11번 출구 접근부'],
       ['X12_APPROACH', 'JUNCTION', 5, 1.5, -1, '12번 출구 접근부'],
@@ -48,6 +48,9 @@ describe('node label layout', () => {
       { left: 6.82, right: 8.18, top: .62, bottom: 1.68 },
       { left: 4.82, right: 6.18, top: 5.87, bottom: 6.93 },
       { left: 2.82, right: 4.18, top: 6.12, bottom: 7.18 },
+      { left: 9.72, right: 12.35, top: 5.48, bottom: 5.98 },
+      { left: .22, right: 3.35, top: 3.78, bottom: 4.28 },
+      { left: 2.77, right: 5.55, top: 8.18, bottom: 8.68 },
     ]
     const layouts = getNodeLabelLayouts(nodes, labels, hazards)
     expect(countLayoutCollisions(layouts, [...nodeObstacles(nodes), ...hazards])).toBe(0)
