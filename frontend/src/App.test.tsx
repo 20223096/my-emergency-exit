@@ -104,7 +104,7 @@ describe('development screen', () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('connection failed'))
     render(<App />)
     expect(await screen.findByRole('alert')).toHaveTextContent('network')
-    expect(screen.getByRole('heading', { name: '내비상구 경로 실험 화면' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '내비상구 · 경로 비교 시연' })).toBeInTheDocument()
     await waitFor(() => expect(screen.queryByText('데이터를 처리하고 있습니다…')).not.toBeInTheDocument())
   })
 

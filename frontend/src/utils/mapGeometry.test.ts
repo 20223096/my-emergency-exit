@@ -48,9 +48,9 @@ describe('node label layout', () => {
       { left: 6.82, right: 8.18, top: .62, bottom: 1.68 },
       { left: 4.82, right: 6.18, top: 5.87, bottom: 6.93 },
       { left: 2.82, right: 4.18, top: 6.12, bottom: 7.18 },
-      { left: 9.72, right: 12.35, top: 5.48, bottom: 5.98 },
-      { left: .22, right: 3.35, top: 3.78, bottom: 4.28 },
-      { left: 2.77, right: 5.55, top: 8.18, bottom: 8.68 },
+      { left: 8.72, right: 11.55, top: 5.48, bottom: 5.98 },
+      { left: .22, right: 3.25, top: 3.78, bottom: 4.28 },
+      { left: 2.77, right: 5.45, top: 8.18, bottom: 8.68 },
     ]
     const layouts = getNodeLabelLayouts(nodes, labels, hazards)
     expect(countLayoutCollisions(layouts, [...nodeObstacles(nodes), ...hazards])).toBe(0)

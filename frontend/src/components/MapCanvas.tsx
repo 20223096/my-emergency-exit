@@ -58,9 +58,9 @@ export function MapCanvas({
     return obstacles
   })
   const zoneLabelObstacles: LayoutObstacle[] = isSeoulPrototype ? [
-    { left: 9.72, right: 12.35, top: 5.48, bottom: 5.98 },
-    { left: 0.22, right: 3.35, top: 3.78, bottom: 4.28 },
-    { left: 2.77, right: 5.55, top: 8.18, bottom: 8.68 },
+    { left: 8.72, right: 11.55, top: 5.48, bottom: 5.98 },
+    { left: 0.22, right: 3.25, top: 3.78, bottom: 4.28 },
+    { left: 2.77, right: 5.45, top: 8.18, bottom: 8.68 },
   ] : []
   const labelLayouts = getNodeLabelLayouts(
     visibleNodes, displayLabels, [...statusObstacles, ...zoneLabelObstacles], labelMeasurements,
@@ -115,11 +115,11 @@ export function MapCanvas({
         {isSeoulPrototype && (
           <g className="map-zones" aria-label="단순화 공간 구역">
             <rect className="zone zone-concourse" x="-0.55" y="-.15" width="11.1" height="6.45" rx=".28" />
-            <text className="zone-label" x="9.85" y="5.85">대합실 · B1 단순화 영역</text>
+            <text className="zone-label" x="8.85" y="5.85">4호선 대합실 · 단순화</text>
             <rect className="zone zone-transfer" x=".1" y="3.7" width="4.05" height="2.35" rx=".28" />
-            <text className="zone-label" x=".35" y="4.15">1호선 환승 연결 구간</text>
+            <text className="zone-label" x=".35" y="4.15">1·4호선 환승 구간 · 단순화</text>
             <rect className="zone zone-platform" x="2.65" y="6.75" width="3.95" height="2.05" rx=".28" />
-            <text className="zone-label" x="2.9" y="8.55">4호선 승강장 · B2</text>
+            <text className="zone-label" x="2.9" y="8.55">4호선 승강장 · 단순화</text>
             <rect className="stair-zone" x="3.05" y="4.65" width="3.05" height="3.2" rx=".2" />
           </g>
         )}

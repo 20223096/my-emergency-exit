@@ -161,9 +161,9 @@ export default function App() {
   return (
     <main className="app-shell">
       <header>
-        <p className="eyebrow">NAVIEXIT · DEVELOPMENT CONSOLE</p>
-        <h1>내비상구 경로 실험 화면</h1>
-        <p>가상 공간과 가정값으로 API 및 SVG 시각화를 검증하는 개발용 화면입니다.</p>
+        <p className="eyebrow">NAVIEXIT · SEOUL STATION PROTOTYPE</p>
+        <h1>내비상구 · 경로 비교 시연</h1>
+        <p>서울역 단순화 그래프에서 기본 조건과 화재·혼잡 가정 이후의 경로를 비교하는 10월 31일 제출용 프로토타입입니다.</p>
       </header>
 
       <section className="controls" aria-label="경로 조건">
