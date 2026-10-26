@@ -87,6 +87,9 @@ export function MapCanvas({
   return (
     <section className="map-panel" aria-label="실험용 공간 지도">
       <div className="legend" aria-label="지도 범례">
+        <span className="legend-start">출발점</span>
+        <span className="legend-exit">출구 후보</span>
+        <span className="legend-selected-exit">선택 출구</span>
         <span className="legend-baseline">기본 경로</span>
         <span className="legend-scenario">변경 경로</span>
         <span className="legend-blocked">차단</span>
@@ -190,11 +193,13 @@ export function MapCanvas({
           {visibleNodes.map((node) => {
             const closed = blockedExits.has(node.id)
             const selected = selectedStartNodeId === node.id
+            const selectedExit = node.id === (scenarioRoute?.selected_exit_id || baselineRoute?.selected_exit_id)
             const label = displayLabels.get(node.id) || node.label
             const layout = labelLayouts.get(node.id)
             return (
-              <g key={node.id} data-testid={`node-${node.id}`} className={`map-node node-${node.type.toLowerCase()}${selected ? ' is-selected' : ''}${closed ? ' is-closed' : ''}`}>
-                <circle cx={node.x} cy={node.y} r={selected ? 0.34 : 0.27}>
+              <g key={node.id} data-testid={`node-${node.id}`} className={`map-node node-${node.type.toLowerCase()}${selected ? ' is-selected' : ''}${selectedExit ? ' is-route-exit' : ''}${closed ? ' is-closed' : ''}`}>
+                <circle cx={node.x} cy={node.y} r={selected || selectedExit ? 0.34 : 0.27}
+                  style={selectedExit ? { fill: '#08a47c', stroke: '#ffffff', strokeWidth: 0.14 } : undefined}>
                   <title>{`${node.id}: ${node.label}, ${node.floor}층, ${node.type}`}</title>
                 </circle>
                 {closed && <path className="closed-cross" d={`M ${node.x - 0.25} ${node.y - 0.25} L ${node.x + 0.25} ${node.y + 0.25} M ${node.x + 0.25} ${node.y - 0.25} L ${node.x - 0.25} ${node.y + 0.25}`} />}
