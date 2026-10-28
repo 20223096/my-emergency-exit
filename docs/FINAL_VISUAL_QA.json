@@ -1,0 +1,498 @@
+[
+  {
+    "name": "01-s3-baseline",
+    "scenarioId": "baseline",
+    "api": {
+      "baseline": {
+        "reachable": true,
+        "path_nodes": [
+          "S3",
+          "P_SOUTH",
+          "STAIR_A_LOWER",
+          "STAIR_A_UPPER",
+          "C_CENTER",
+          "X11_APPROACH",
+          "EXIT_11"
+        ],
+        "path_edges": [
+          "L4P01",
+          "L4P02",
+          "STAIR_A",
+          "C01",
+          "E11_IN",
+          "E11_OUT"
+        ],
+        "selected_exit_id": "EXIT_11",
+        "distance_m": 56,
+        "movement_time_s": 52.5,
+        "reaction_delay_s": 0,
+        "total_time_s": 52.5,
+        "applied_conditions": {
+          "blocked_edge_ids": [],
+          "blocked_exit_ids": [],
+          "congestion_delays": {},
+          "walking_speed_mps": 1.2,
+          "stair_speed_mps": 0.8
+        }
+      },
+      "scenario": {
+        "reachable": true,
+        "path_nodes": [
+          "S3",
+          "P_SOUTH",
+          "STAIR_A_LOWER",
+          "STAIR_A_UPPER",
+          "C_CENTER",
+          "X11_APPROACH",
+          "EXIT_11"
+        ],
+        "path_edges": [
+          "L4P01",
+          "L4P02",
+          "STAIR_A",
+          "C01",
+          "E11_IN",
+          "E11_OUT"
+        ],
+        "selected_exit_id": "EXIT_11",
+        "distance_m": 56,
+        "movement_time_s": 52.5,
+        "reaction_delay_s": 0,
+        "total_time_s": 52.5,
+        "applied_conditions": {
+          "blocked_edge_ids": [],
+          "blocked_exit_ids": [],
+          "congestion_delays": {},
+          "walking_speed_mps": 1.2,
+          "stair_speed_mps": 0.8
+        }
+      },
+      "path_changed": false,
+      "exit_changed": false,
+      "distance_delta_m": 0,
+      "total_time_delta_s": 0,
+      "change_reasons": [
+        "입력 조건이 최적 경로와 모의 이동시간에 변화를 주지 않았습니다."
+      ]
+    },
+    "results": "결과 비교\n재난 전 참고 경로 · 조건 반영 경로\n재난 전 참고 경로\n도달 가능\n11번 출구\n이동거리\n56 m\n모의 이동시간\n52.5 초\n조건 반영 경로\n도달 가능\n11번 출구\n이동거리\n56 m\n모의 이동시간\n52.5 초\n우회 거리\n0 m\n시간 변화\n0 초\n\n입력 조건이 최적 경로와 모의 이동시간에 변화를 주지 않았습니다.",
+    "scenarioPathCount": 6,
+    "baselinePathCount": 6,
+    "measurements": {
+      "appShell": {
+        "width": 1303,
+        "height": 1146.5,
+        "x": 68.5,
+        "y": 0
+      },
+      "workspace": {
+        "width": 1263,
+        "height": 935,
+        "x": 88.5,
+        "y": 107
+      },
+      "mapColumn": {
+        "width": 800,
+        "height": 619.046875,
+        "x": 88.5,
+        "y": 107
+      },
+      "mapCanvas": {
+        "width": 798,
+        "height": 492,
+        "x": 89.5,
+        "y": 166
+      },
+      "sideColumn": {
+        "width": 416,
+        "height": 935,
+        "x": 922.5,
+        "y": 107
+      },
+      "conditionPanel": {
+        "width": 416,
+        "height": 144,
+        "x": 922.5,
+        "y": 107
+      },
+      "resultPanel": {
+        "width": 416,
+        "height": 403,
+        "x": 922.5,
+        "y": 263
+      },
+      "routeCard": {
+        "width": 380,
+        "height": 104,
+        "x": 940.5,
+        "y": 340
+      },
+      "workspaceStyle": {
+        "fontFamily": "\"Pretendard Variable\", Pretendard, \"42dot Sans Variable\", \"Noto Sans KR\", Inter, system-ui, sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "padding": "0px",
+        "gap": "34px",
+        "borderRadius": "0px"
+      },
+      "panelStyle": {
+        "fontFamily": "\"Pretendard Variable\", Pretendard, \"42dot Sans Variable\", \"Noto Sans KR\", Inter, system-ui, sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "padding": "14px 12px",
+        "gap": "normal",
+        "borderRadius": "12px"
+      },
+      "routeCardStyle": {
+        "fontFamily": "\"42dot Sans Variable\", \"Pretendard Variable\", sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "padding": "12px 24px",
+        "gap": "normal",
+        "borderRadius": "12px"
+      }
+    }
+  },
+  {
+    "name": "02-s3-fire-a",
+    "scenarioId": "seoul-fire-a-approach",
+    "api": {
+      "baseline": {
+        "reachable": true,
+        "path_nodes": [
+          "S3",
+          "P_SOUTH",
+          "STAIR_A_LOWER",
+          "STAIR_A_UPPER",
+          "C_CENTER",
+          "X11_APPROACH",
+          "EXIT_11"
+        ],
+        "path_edges": [
+          "L4P01",
+          "L4P02",
+          "STAIR_A",
+          "C01",
+          "E11_IN",
+          "E11_OUT"
+        ],
+        "selected_exit_id": "EXIT_11",
+        "distance_m": 56,
+        "movement_time_s": 52.5,
+        "reaction_delay_s": 0,
+        "total_time_s": 52.5,
+        "applied_conditions": {
+          "blocked_edge_ids": [],
+          "blocked_exit_ids": [],
+          "congestion_delays": {},
+          "walking_speed_mps": 1.2,
+          "stair_speed_mps": 0.8
+        }
+      },
+      "scenario": {
+        "reachable": true,
+        "path_nodes": [
+          "S3",
+          "P_SOUTH",
+          "STAIR_A_LOWER",
+          "STAIR_A_UPPER",
+          "C_CENTER",
+          "X12_APPROACH",
+          "EXIT_12"
+        ],
+        "path_edges": [
+          "L4P01",
+          "L4P02",
+          "STAIR_A",
+          "C01",
+          "E12_IN",
+          "E12_OUT"
+        ],
+        "selected_exit_id": "EXIT_12",
+        "distance_m": 60,
+        "movement_time_s": 55.833,
+        "reaction_delay_s": 0,
+        "total_time_s": 55.833,
+        "applied_conditions": {
+          "blocked_edge_ids": [
+            "E11_OUT"
+          ],
+          "blocked_exit_ids": [],
+          "congestion_delays": {},
+          "walking_speed_mps": 1.2,
+          "stair_speed_mps": 0.8
+        }
+      },
+      "path_changed": true,
+      "exit_changed": true,
+      "distance_delta_m": 4,
+      "total_time_delta_s": 3.333,
+      "change_reasons": [
+        "통로 차단으로 기본 경로를 이용할 수 없어 경로가 변경되었습니다."
+      ]
+    },
+    "results": "결과 비교\n재난 전 참고 경로 · 조건 반영 경로\n재난 전 참고 경로\n도달 가능\n11번 출구\n이동거리\n56 m\n모의 이동시간\n52.5 초\n조건 반영 경로\n도달 가능\n12번 출구\n이동거리\n60 m\n모의 이동시간\n55.833 초\n우회 거리\n+4 m\n시간 변화\n+3.333 초\n\n통로 차단으로 기본 경로를 이용할 수 없어 경로가 변경되었습니다.",
+    "scenarioPathCount": 6,
+    "baselinePathCount": 6
+  },
+  {
+    "name": "03-s3-fire-b",
+    "scenarioId": "seoul-fire-b-stair",
+    "api": {
+      "baseline": {
+        "reachable": true,
+        "path_nodes": [
+          "S3",
+          "P_SOUTH",
+          "STAIR_A_LOWER",
+          "STAIR_A_UPPER",
+          "C_CENTER",
+          "X11_APPROACH",
+          "EXIT_11"
+        ],
+        "path_edges": [
+          "L4P01",
+          "L4P02",
+          "STAIR_A",
+          "C01",
+          "E11_IN",
+          "E11_OUT"
+        ],
+        "selected_exit_id": "EXIT_11",
+        "distance_m": 56,
+        "movement_time_s": 52.5,
+        "reaction_delay_s": 0,
+        "total_time_s": 52.5,
+        "applied_conditions": {
+          "blocked_edge_ids": [],
+          "blocked_exit_ids": [],
+          "congestion_delays": {},
+          "walking_speed_mps": 1.2,
+          "stair_speed_mps": 0.8
+        }
+      },
+      "scenario": {
+        "reachable": true,
+        "path_nodes": [
+          "S3",
+          "P_SOUTH",
+          "STAIR_B_LOWER",
+          "STAIR_B_UPPER",
+          "C_WEST",
+          "X13_APPROACH",
+          "EXIT_13"
+        ],
+        "path_edges": [
+          "L4P01",
+          "L4P03",
+          "STAIR_B",
+          "C02",
+          "E13_IN",
+          "E13_OUT"
+        ],
+        "selected_exit_id": "EXIT_13",
+        "distance_m": 66,
+        "movement_time_s": 61.667,
+        "reaction_delay_s": 0,
+        "total_time_s": 61.667,
+        "applied_conditions": {
+          "blocked_edge_ids": [
+            "STAIR_A"
+          ],
+          "blocked_exit_ids": [],
+          "congestion_delays": {},
+          "walking_speed_mps": 1.2,
+          "stair_speed_mps": 0.8
+        }
+      },
+      "path_changed": true,
+      "exit_changed": true,
+      "distance_delta_m": 10,
+      "total_time_delta_s": 9.167,
+      "change_reasons": [
+        "통로 차단으로 기본 경로를 이용할 수 없어 경로가 변경되었습니다."
+      ]
+    },
+    "results": "결과 비교\n재난 전 참고 경로 · 조건 반영 경로\n재난 전 참고 경로\n도달 가능\n11번 출구\n이동거리\n56 m\n모의 이동시간\n52.5 초\n조건 반영 경로\n도달 가능\n13번 출구\n이동거리\n66 m\n모의 이동시간\n61.667 초\n우회 거리\n+10 m\n시간 변화\n+9.167 초\n\n통로 차단으로 기본 경로를 이용할 수 없어 경로가 변경되었습니다.",
+    "scenarioPathCount": 6,
+    "baselinePathCount": 6
+  },
+  {
+    "name": "04-exit-11-closed",
+    "scenarioId": "seoul-fire-a-exit",
+    "api": {
+      "baseline": {
+        "reachable": true,
+        "path_nodes": [
+          "S3",
+          "P_SOUTH",
+          "STAIR_A_LOWER",
+          "STAIR_A_UPPER",
+          "C_CENTER",
+          "X11_APPROACH",
+          "EXIT_11"
+        ],
+        "path_edges": [
+          "L4P01",
+          "L4P02",
+          "STAIR_A",
+          "C01",
+          "E11_IN",
+          "E11_OUT"
+        ],
+        "selected_exit_id": "EXIT_11",
+        "distance_m": 56,
+        "movement_time_s": 52.5,
+        "reaction_delay_s": 0,
+        "total_time_s": 52.5,
+        "applied_conditions": {
+          "blocked_edge_ids": [],
+          "blocked_exit_ids": [],
+          "congestion_delays": {},
+          "walking_speed_mps": 1.2,
+          "stair_speed_mps": 0.8
+        }
+      },
+      "scenario": {
+        "reachable": true,
+        "path_nodes": [
+          "S3",
+          "P_SOUTH",
+          "STAIR_A_LOWER",
+          "STAIR_A_UPPER",
+          "C_CENTER",
+          "X12_APPROACH",
+          "EXIT_12"
+        ],
+        "path_edges": [
+          "L4P01",
+          "L4P02",
+          "STAIR_A",
+          "C01",
+          "E12_IN",
+          "E12_OUT"
+        ],
+        "selected_exit_id": "EXIT_12",
+        "distance_m": 60,
+        "movement_time_s": 55.833,
+        "reaction_delay_s": 0,
+        "total_time_s": 55.833,
+        "applied_conditions": {
+          "blocked_edge_ids": [],
+          "blocked_exit_ids": [
+            "EXIT_11"
+          ],
+          "congestion_delays": {},
+          "walking_speed_mps": 1.2,
+          "stair_speed_mps": 0.8
+        }
+      },
+      "path_changed": true,
+      "exit_changed": true,
+      "distance_delta_m": 4,
+      "total_time_delta_s": 3.333,
+      "change_reasons": [
+        "출구 폐쇄로 선택 출구가 변경되었습니다."
+      ]
+    },
+    "results": "결과 비교\n재난 전 참고 경로 · 조건 반영 경로\n재난 전 참고 경로\n도달 가능\n11번 출구\n이동거리\n56 m\n모의 이동시간\n52.5 초\n조건 반영 경로\n도달 가능\n12번 출구\n이동거리\n60 m\n모의 이동시간\n55.833 초\n우회 거리\n+4 m\n시간 변화\n+3.333 초\n\n출구 폐쇄로 선택 출구가 변경되었습니다.",
+    "scenarioPathCount": 6,
+    "baselinePathCount": 6
+  },
+  {
+    "name": "05-unreachable-stairs-a-b",
+    "scenarioId": "seoul-fire-b-unreachable",
+    "api": {
+      "baseline": {
+        "reachable": true,
+        "path_nodes": [
+          "S3",
+          "P_SOUTH",
+          "STAIR_A_LOWER",
+          "STAIR_A_UPPER",
+          "C_CENTER",
+          "X11_APPROACH",
+          "EXIT_11"
+        ],
+        "path_edges": [
+          "L4P01",
+          "L4P02",
+          "STAIR_A",
+          "C01",
+          "E11_IN",
+          "E11_OUT"
+        ],
+        "selected_exit_id": "EXIT_11",
+        "distance_m": 56,
+        "movement_time_s": 52.5,
+        "reaction_delay_s": 0,
+        "total_time_s": 52.5,
+        "applied_conditions": {
+          "blocked_edge_ids": [],
+          "blocked_exit_ids": [],
+          "congestion_delays": {},
+          "walking_speed_mps": 1.2,
+          "stair_speed_mps": 0.8
+        }
+      },
+      "scenario": {
+        "reachable": false,
+        "path_nodes": [],
+        "path_edges": [],
+        "selected_exit_id": null,
+        "distance_m": null,
+        "movement_time_s": null,
+        "reaction_delay_s": 0,
+        "total_time_s": null,
+        "applied_conditions": {
+          "blocked_edge_ids": [
+            "STAIR_A",
+            "STAIR_B"
+          ],
+          "blocked_exit_ids": [],
+          "congestion_delays": {},
+          "walking_speed_mps": 1.2,
+          "stair_speed_mps": 0.8
+        }
+      },
+      "path_changed": true,
+      "exit_changed": true,
+      "distance_delta_m": null,
+      "total_time_delta_s": null,
+      "change_reasons": [
+        "설정된 차단 및 출구 폐쇄 조건으로 사용 가능한 경로가 없습니다."
+      ]
+    },
+    "results": "결과 비교\n재난 전 참고 경로 · 조건 반영 경로\n재난 전 참고 경로\n도달 가능\n11번 출구\n이동거리\n56 m\n모의 이동시간\n52.5 초\n조건 반영 경로\n경로 없음\n이동 가능한 경로 없음\n\n거리와 시간은 계산하지 않습니다.\n\n설정된 차단 및 출구 폐쇄 조건으로 사용 가능한 경로가 없습니다.",
+    "scenarioPathCount": 0,
+    "baselinePathCount": 6
+  },
+  {
+    "name": "06-condition-changed",
+    "scenarioPathCount": 0,
+    "staleNotice": "조건이 변경되었습니다. 이전 결과를 지웠습니다. 새 조건으로 다시 계산해 주세요."
+  },
+  {
+    "name": "07-input-error",
+    "compareDisabled": true
+  },
+  {
+    "name": "loading-duplicate-guard",
+    "disabledDuringLoading": true,
+    "loadingCalls": 1
+  },
+  {
+    "name": "08-api-error-and-retry",
+    "errorText": "계산 오류 · server\n\nQA forced API failure\n\n다시 시도",
+    "retryStatus": 200,
+    "results": "결과 비교\n재난 전 참고 경로 · 조건 반영 경로\n재난 전 참고 경로\n도달 가능\n11번 출구\n이동거리\n56 m\n모의 이동시간\n52.5 초\n조건 반영 경로\n도달 가능\n12번 출구\n이동거리\n60 m\n모의 이동시간\n55.833 초\n우회 거리\n+4 m\n시간 변화\n+3.333 초\n\n통로 차단으로 기본 경로를 이용할 수 없어 경로가 변경되었습니다."
+  },
+  {
+    "name": "10-mobile-fire-a-390x844",
+    "overflow": {
+      "body": 390,
+      "viewport": 390,
+      "mapViewport": 680
+    }
+  }
+]

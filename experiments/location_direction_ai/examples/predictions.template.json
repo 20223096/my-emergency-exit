@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "run_status": "not_run",
+  "model": null,
+  "confidence_semantics": {
+    "score_type": "UNSPECIFIED",
+    "verified": false,
+    "verification_note": "No model is connected and no prediction scores exist."
+  },
+  "records": []
+}
+

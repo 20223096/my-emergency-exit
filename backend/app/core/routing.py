@@ -39,7 +39,7 @@ def calculate_route(indoor_map: IndoorMap, request: RouteRequest) -> RouteResult
     blocked_exits = set(request.blocked_exit_ids)
     available_exits = sorted(
         node.id for node in indoor_map.nodes
-        if node.type == NodeType.EXIT and node.id not in blocked_exits
+        if node.type == NodeType.EXIT and node.active_for_routing and node.id not in blocked_exits
     )
     adjacency: dict[str, list[_Arc]] = defaultdict(list)
     for edge in indoor_map.edges:
@@ -72,7 +72,9 @@ def calculate_route(indoor_map: IndoorMap, request: RouteRequest) -> RouteResult
             if arc.target in path_nodes:
                 continue
             delay = request.congestion_delays.get(arc.edge.id, 0.0)
-            segment_time = arc.edge.length_m / request.walking_speed_mps + delay
+            speed = (request.stair_speed_mps or request.walking_speed_mps) \
+                if arc.edge.type.value == "STAIR" else request.walking_speed_mps
+            segment_time = arc.edge.length_m / speed + delay
             heapq.heappush(heap, (
                 time_s + segment_time,
                 path_nodes + (arc.target,),
@@ -86,6 +88,7 @@ def calculate_route(indoor_map: IndoorMap, request: RouteRequest) -> RouteResult
         blocked_exit_ids=sorted(request.blocked_exit_ids),
         congestion_delays=dict(sorted(request.congestion_delays.items())),
         walking_speed_mps=request.walking_speed_mps,
+        stair_speed_mps=request.stair_speed_mps,
     )
     if not candidates:
         return RouteResult(reachable=False, path_nodes=[], path_edges=[], selected_exit_id=None,

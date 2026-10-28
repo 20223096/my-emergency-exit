@@ -2,146 +2,74 @@ import { useEffect, useMemo, useState } from 'react'
 import { ApiError } from './api/client'
 import { calculateRoute, compareRoutes } from './api/routes'
 import { MapCanvas } from './components/MapCanvas'
+import { MultiAgentExperiment } from './components/MultiAgentExperiment'
 import { useMapData } from './hooks/useMapData'
-import type { RouteComparison, RouteRequest, RouteResult, ScenarioConditions } from './types/api'
+import type { IndoorMap, RouteComparison, RouteRequest, RouteResult, ScenarioConditions } from './types/api'
 import './styles.css'
 
-const emptyConditions = (): ScenarioConditions => ({
-  blocked_edge_ids: [],
-  blocked_exit_ids: [],
-  congestion_delays: {},
-})
+const emptyConditions = (): ScenarioConditions => ({ blocked_edge_ids: [], blocked_exit_ids: [], congestion_delays: {} })
+type ActionKind = 'calculate' | 'compare'
+type FieldErrors = Partial<Record<'scenario' | 'walking' | 'stair' | 'reaction' | 'congestion', string>>
 
-function resultText(route: RouteResult | null): string {
-  if (!route) return '아직 계산하지 않았습니다.'
-  if (!route.reachable) return '사용 가능한 경로가 없습니다.'
-  return `${route.selected_exit_id} · ${route.distance_m}m · ${route.total_time_s}초`
+function displayExit(exitId: string | null) { const match = exitId?.match(/^EXIT_(\d+)$/); return match ? `${match[1]}번 출구` : exitId || '—' }
+function metric(value: number | null, unit: string) { return value == null ? '—' : `${value.toLocaleString('ko-KR', { maximumFractionDigits: 3 })}${unit}` }
+function signedMetric(value: number | null, unit: string) { return value == null ? '—' : `${value > 0 ? '+' : ''}${value.toLocaleString('ko-KR', { maximumFractionDigits: 3 })}${unit}` }
+
+function RouteCard({ title, route, tone }: { title: string; route: RouteResult | null; tone: 'baseline' | 'scenario' }) {
+  const status = !route ? '계산 전' : route.reachable ? '도달 가능' : '경로 없음'
+  return <article className={`route-card ${tone}${route && !route.reachable ? ' unreachable' : ''}`}>
+    <div className="card-heading"><span>{title}</span><em>{status}</em></div>
+    {!route ? <strong className="route-summary">아직 계산하지 않았습니다.</strong> : !route.reachable ? <><strong className="route-summary">이동 가능한 경로 없음</strong><p className="unreachable-copy">거리와 시간은 계산하지 않습니다.</p></> : <><strong className="route-exit">{displayExit(route.selected_exit_id)}</strong><dl><div><dt>이동거리</dt><dd>{metric(route.distance_m, ' m')}</dd></div><div><dt>모의 이동시간</dt><dd>{metric(route.total_time_s, ' 초')}</dd></div></dl></>}
+  </article>
+}
+
+function RouteSegments({ mapData, route, conditions }: { mapData: IndoorMap; route: RouteResult | null; conditions: ScenarioConditions }) {
+  const nodes = new Map(mapData.nodes.map((node) => [node.id, node])); const edges = new Map(mapData.edges.map((edge) => [edge.id, edge]))
+  if (!route) return <p className="segments-empty">계산 후 실제 경로 구간이 표시됩니다.</p>
+  if (!route.reachable) return <p className="segments-empty danger">표시할 이동 경로가 없습니다.</p>
+  let cumulative = 0
+  return <ol className="segment-list">{route.path_edges.map((edgeId, index) => {
+    const edge = edges.get(edgeId); if (!edge) return null; cumulative += edge.length_m
+    const from = nodes.get(route.path_nodes[index]); const to = nodes.get(route.path_nodes[index + 1]); const delay = conditions.congestion_delays[edgeId]
+    return <li key={`${edgeId}-${index}`}><span className={`segment-icon ${edge.type.toLowerCase()}`} aria-hidden="true" /><div><strong>{from?.label || edge.source} → {to?.label || edge.target}</strong><small>{edge.type === 'STAIR' ? `${from?.floor}층 → ${to?.floor}층 · 계단` : `${edge.id} · 통로`}</small></div><span className="segment-value">{metric(cumulative, ' m')}{delay != null && <small>+{delay}초 고정 지연</small>}</span></li>
+  })}</ol>
 }
 
 export default function App() {
   const { maps, scenarios, mapData, selectedMapId, setSelectedMapId, loading: dataLoading, error: dataError } = useMapData()
-  const [startNodeId, setStartNodeId] = useState('')
-  const [scenarioId, setScenarioId] = useState('')
-  const [conditions, setConditions] = useState<ScenarioConditions>(emptyConditions)
-  const [floor, setFloor] = useState<number | null>(null)
-  const [route, setRoute] = useState<RouteResult | null>(null)
-  const [comparison, setComparison] = useState<RouteComparison | null>(null)
-  const [actionLoading, setActionLoading] = useState(false)
-  const [actionError, setActionError] = useState<ApiError | null>(null)
+  const [startNodeId, setStartNodeId] = useState(''); const [scenarioId, setScenarioId] = useState(''); const [conditions, setConditions] = useState<ScenarioConditions>(emptyConditions); const [floor, setFloor] = useState<number | null>(null)
+  const [route, setRoute] = useState<RouteResult | null>(null); const [comparison, setComparison] = useState<RouteComparison | null>(null); const [actionLoading, setActionLoading] = useState(false); const [actionError, setActionError] = useState<ApiError | null>(null)
+  const [walkingSpeed, setWalkingSpeed] = useState(1.2); const [stairSpeed, setStairSpeed] = useState(0.8); const [reactionDelay, setReactionDelay] = useState(0); const [congestionEdgeId, setCongestionEdgeId] = useState(''); const [congestionDelay, setCongestionDelay] = useState(0)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({}); const [stale, setStale] = useState(false); const [lastAction, setLastAction] = useState<ActionKind>('compare'); const [showBaseline, setShowBaseline] = useState(true); const [showScenario, setShowScenario] = useState(true)
+  const [isEditing, setIsEditing] = useState(true)
+  const [appMode, setAppMode] = useState<'single' | 'multi'>('single')
+  const starts = useMemo(() => mapData?.nodes.filter((node) => node.type === 'START') || [], [mapData]); const floors = useMemo(() => [...new Set(mapData?.nodes.map((node) => node.floor) || [])].sort(), [mapData]); const selectedScenario = scenarios.find((scenario) => scenario.id === scenarioId); const activeRoute = comparison?.scenario || route; const hasResult = Boolean(route || comparison)
+  useEffect(() => { if (starts.length && !starts.some((node) => node.id === startNodeId)) setStartNodeId(starts[0].id) }, [starts, startNodeId])
+  const validate = (): FieldErrors => { const next: FieldErrors = {}; if (!scenarioId) next.scenario = '재난 상황을 선택해 주세요.'; if (!Number.isFinite(walkingSpeed) || walkingSpeed <= 0 || walkingSpeed > 10) next.walking = '0보다 크고 10 이하인 값을 입력해 주세요.'; if (!Number.isFinite(stairSpeed) || stairSpeed <= 0 || stairSpeed > 10) next.stair = '0보다 크고 10 이하인 값을 입력해 주세요.'; if (!Number.isFinite(reactionDelay) || reactionDelay < 0 || reactionDelay > 3600) next.reaction = '0~3600초 범위로 입력해 주세요.'; if (!Number.isFinite(congestionDelay) || congestionDelay < 0) next.congestion = '0 이상의 지연시간을 입력해 주세요.'; return next }
+  const currentErrors = validate(); const canCalculate = Boolean(selectedMapId && startNodeId && mapData && Object.keys(currentErrors).length === 0 && !dataLoading && !actionLoading)
+  const invalidate = () => { setStale((current) => current || hasResult); setRoute(null); setComparison(null); setActionError(null); setShowBaseline(true); setShowScenario(true) }
+  const selectScenario = (id: string) => { setScenarioId(id); invalidate(); if (id === 'baseline') { setConditions(emptyConditions()); return }; const selected = scenarios.find((scenario) => scenario.id === id); if (!selected) { setConditions(emptyConditions()); return }; if (selected.map_id !== selectedMapId) setSelectedMapId(selected.map_id); setStartNodeId(selected.start_node_id); setConditions({ ...emptyConditions(), ...selected.conditions }) }
+  const updateNumber = (setter: (value: number) => void, value: number) => { setter(value); invalidate() }
+  const requestBody = (): RouteRequest => ({ map_id: selectedMapId, start_node_id: startNodeId, blocked_edge_ids: conditions.blocked_edge_ids, blocked_exit_ids: conditions.blocked_exit_ids, congestion_delays: conditions.congestion_delays, walking_speed_mps: walkingSpeed, stair_speed_mps: stairSpeed, reaction_delay_s: reactionDelay })
+  const addCongestion = () => { if (!congestionEdgeId || currentErrors.congestion) { setFieldErrors(currentErrors); return }; setConditions((current) => ({ ...current, congestion_delays: { ...current.congestion_delays, [congestionEdgeId]: congestionDelay } })); invalidate() }
+  const reset = () => { setScenarioId(''); setConditions(emptyConditions()); setWalkingSpeed(1.2); setStairSpeed(0.8); setReactionDelay(0); setCongestionEdgeId(''); setCongestionDelay(0); setFloor(null); setFieldErrors({}); setStale(false); setRoute(null); setComparison(null); setActionError(null); setShowBaseline(true); setShowScenario(true); setIsEditing(true) }
+  const changeMap = (mapId: string) => { setSelectedMapId(mapId); setScenarioId(''); setConditions(emptyConditions()); setCongestionEdgeId(''); setFloor(null); invalidate() }
+  const runAction = async (kind: ActionKind) => { const errors = validate(); setFieldErrors(errors); if (Object.keys(errors).length || !selectedMapId || !startNodeId || actionLoading) return; setLastAction(kind); setActionLoading(true); setActionError(null); setStale(false); setRoute(null); setComparison(null); try { if (kind === 'calculate') setRoute(await calculateRoute(requestBody())); else setComparison(await compareRoutes(requestBody())); setIsEditing(false) } catch (reason) { setActionError(reason instanceof ApiError ? reason : new ApiError('경로 요청에 실패했습니다.', 'server', null, reason)); setIsEditing(true) } finally { setActionLoading(false) } }
+  const displayError = actionError || dataError; const conditionCount = conditions.blocked_edge_ids.length + conditions.blocked_exit_ids.length + Object.keys(conditions.congestion_delays).length; const scenarioLabel = scenarioId === 'baseline' ? '재난 없음 · 기준 조건' : selectedScenario?.name || '재난 상황 미선택'
 
-  const starts = useMemo(() => mapData?.nodes.filter((node) => node.type === 'START') || [], [mapData])
-  const floors = useMemo(() => [...new Set(mapData?.nodes.map((node) => node.floor) || [])].sort(), [mapData])
-
-  useEffect(() => {
-    if (starts.length && !starts.some((node) => node.id === startNodeId)) setStartNodeId(starts[0].id)
-  }, [starts, startNodeId])
-
-  const selectScenario = (id: string) => {
-    setScenarioId(id)
-    const selected = scenarios.find((scenario) => scenario.id === id)
-    if (!selected) {
-      setConditions(emptyConditions())
-      return
-    }
-    if (selected.map_id !== selectedMapId) setSelectedMapId(selected.map_id)
-    setStartNodeId(selected.start_node_id)
-    setConditions(selected.conditions)
-  }
-
-  const requestBody = (): RouteRequest => ({
-    map_id: selectedMapId,
-    start_node_id: startNodeId,
-    blocked_edge_ids: conditions.blocked_edge_ids,
-    blocked_exit_ids: conditions.blocked_exit_ids,
-    congestion_delays: conditions.congestion_delays,
-    walking_speed_mps: 1.2,
-    reaction_delay_s: 5,
-  })
-
-  const runAction = async (kind: 'calculate' | 'compare') => {
-    if (!selectedMapId || !startNodeId) return
-    setActionLoading(true)
-    setActionError(null)
-    try {
-      if (kind === 'calculate') {
-        setRoute(await calculateRoute(requestBody()))
-      } else {
-        const result = await compareRoutes(requestBody())
-        setComparison(result)
-        setRoute(result.scenario)
-      }
-    } catch (reason) {
-      setActionError(reason instanceof ApiError ? reason : new ApiError('경로 요청에 실패했습니다.', 'server', null, reason))
-    } finally {
-      setActionLoading(false)
-    }
-  }
-
-  const displayError = actionError || dataError
-
-  return (
-    <main className="app-shell">
-      <header>
-        <p className="eyebrow">NAVIEXIT · DEVELOPMENT CONSOLE</p>
-        <h1>내비상구 경로 실험 화면</h1>
-        <p>가상 공간과 가정값으로 API 및 SVG 시각화를 검증하는 개발용 화면입니다.</p>
-      </header>
-
-      <section className="controls" aria-label="경로 조건">
-        <label>지도
-          <select aria-label="지도 선택" value={selectedMapId} onChange={(event) => setSelectedMapId(event.target.value)}>
-            {maps.map((map) => <option key={map.id} value={map.id}>{map.name}</option>)}
-          </select>
-        </label>
-        <label>시작 위치
-          <select aria-label="시작 위치 선택" value={startNodeId} onChange={(event) => setStartNodeId(event.target.value)}>
-            {starts.map((node) => <option key={node.id} value={node.id}>{node.id} · {node.label}</option>)}
-          </select>
-        </label>
-        <label>사전 시나리오
-          <select aria-label="시나리오 선택" value={scenarioId} onChange={(event) => selectScenario(event.target.value)}>
-            <option value="">기본 조건</option>
-            {scenarios.filter((scenario) => scenario.map_id === selectedMapId).map((scenario) => (
-              <option key={scenario.id} value={scenario.id}>{scenario.name}</option>
-            ))}
-          </select>
-        </label>
-        <label>표시 층
-          <select aria-label="층 선택" value={floor ?? 'all'} onChange={(event) => setFloor(event.target.value === 'all' ? null : Number(event.target.value))}>
-            <option value="all">전체 층</option>
-            {floors.map((item) => <option key={item} value={item}>{item}층</option>)}
-          </select>
-        </label>
-        <div className="button-row">
-          <button disabled={actionLoading || dataLoading || !mapData} onClick={() => void runAction('calculate')}>경로 계산</button>
-          <button className="secondary" disabled={actionLoading || dataLoading || !mapData} onClick={() => void runAction('compare')}>기본 경로와 비교</button>
-        </div>
-      </section>
-
-      {(dataLoading || actionLoading) && <p className="status" role="status">데이터를 처리하고 있습니다…</p>}
-      {displayError && <div className="error" role="alert"><strong>{displayError.kind}</strong> · {displayError.message}</div>}
-
-      {mapData && (
-        <MapCanvas
-          mapData={mapData}
-          baselineRoute={comparison?.baseline}
-          scenarioRoute={comparison?.scenario || route}
-          blockedEdgeIds={conditions.blocked_edge_ids}
-          blockedExitIds={conditions.blocked_exit_ids}
-          congestionDelays={conditions.congestion_delays}
-          selectedStartNodeId={startNodeId}
-          floor={floor}
-        />
-      )}
-
-      <section className="results" aria-label="계산 결과">
-        <article><span>계산 경로</span><strong>{resultText(route)}</strong></article>
-        <article><span>기본 경로</span><strong>{resultText(comparison?.baseline || null)}</strong></article>
-        <article><span>변경 경로</span><strong>{resultText(comparison?.scenario || null)}</strong></article>
-        {comparison?.change_reasons.map((reason) => <p key={reason} className="reason">{reason}</p>)}
-      </section>
-
-      <footer>실제 재난 안내가 아닌 실험용 프로토타입입니다. 좌표는 상대 위치이며 거리·시간은 백엔드 계산값입니다.</footer>
-    </main>
-  )
+  return <main className="app-shell">
+    <header className="app-header"><div><p className="eyebrow">SEOUL STATION · ROUTE COMPARISON</p><h1>내비상구 · 대피 경로 비교</h1><p>입력한 차단·속도·고정 지연 조건에 따른 단순화 그래프 결과입니다.</p></div><div className="prototype-badge">실험 프로토타입</div></header>
+    <nav className="app-mode-switch" aria-label="분석 모드"><button className={appMode === 'single' ? 'is-active' : ''} onClick={() => setAppMode('single')}>1인 경로 분석</button><button className={appMode === 'multi' ? 'is-active' : ''} onClick={() => { setSelectedMapId('seoul-station-line4-prototype-v1'); setAppMode('multi') }}>다중 인원 실험</button></nav>
+    {appMode === 'multi' ? <MultiAgentExperiment mapData={mapData} scenarios={scenarios} /> : <>
+    {dataLoading && <p className="status" role="status">지도와 시나리오를 불러오고 있습니다…</p>}{actionLoading && <p className="status calculating" role="status"><span className="spinner" />경로를 계산하고 있습니다. 중복 요청은 잠시 제한됩니다.</p>}
+    {displayError && <div className="error" role="alert"><div><strong>계산 오류 · {displayError.kind}</strong><p>{displayError.message}</p></div>{actionError && <button className="retry-button" onClick={() => void runAction(lastAction)}>다시 시도</button>}</div>}{stale && !hasResult && <div className="stale-notice" role="status"><strong>조건이 변경되었습니다.</strong> 이전 결과를 지웠습니다. 새 조건으로 다시 계산해 주세요.</div>}
+    <div className="workspace"><section className="map-column" aria-label="지도 및 경로"><div className="map-toolbar"><div className="route-toggles"><label><input type="checkbox" checked={showBaseline} disabled={!hasResult} onChange={(e) => setShowBaseline(e.target.checked)} />기본 경로</label><label><input type="checkbox" checked={showScenario} disabled={!hasResult} onChange={(e) => setShowScenario(e.target.checked)} />조건 반영 경로</label></div><label className="compact-label">표시 층<select aria-label="층 선택" value={floor ?? 'all'} onChange={(event) => setFloor(event.target.value === 'all' ? null : Number(event.target.value))}><option value="all">전체 층</option>{floors.map((item) => <option key={item} value={item}>{item}층</option>)}</select></label></div>
+      {mapData && <MapCanvas mapData={mapData} baselineRoute={comparison?.baseline} scenarioRoute={activeRoute} blockedEdgeIds={conditions.blocked_edge_ids} blockedExitIds={conditions.blocked_exit_ids} congestionDelays={conditions.congestion_delays} selectedStartNodeId={startNodeId} floor={floor} hazardEdgeIds={selectedScenario?.hazard_edge_ids || []} showBaseline={showBaseline} showScenario={showScenario} />}<p className="map-caption"><strong>안내도와 계산 그래프는 다릅니다.</strong> 이 화면은 실제 안내도 위 좌표 정합을 주장하지 않는 단순화 계산 그래프이며, 일반 출구를 검증된 비상구로 표시하지 않습니다.</p></section>
+      <aside className="side-column"><section className={`panel condition-panel${!isEditing && hasResult ? ' is-collapsed' : ''}`} aria-label="경로 조건"><div className="panel-heading"><div><span>조건 설정</span><h2>{scenarioLabel}</h2></div>{!isEditing && hasResult ? <button className="text-button" onClick={() => setIsEditing(true)}>변경하기</button> : <button className="text-button" onClick={reset} disabled={actionLoading}>초기화</button>}</div><div className="condition-summary"><span>{startNodeId || '출발점 미선택'}</span><span>평지 {walkingSpeed || '—'} m/s</span><span>계단 {stairSpeed || '—'} m/s</span><span>출발 지연 {reactionDelay || 0}초</span>{conditionCount > 0 && <span>조건 {conditionCount}개</span>}</div>
+        <div className="control-grid"><label>지도<select aria-label="지도 선택" value={selectedMapId} onChange={(event) => changeMap(event.target.value)}>{maps.map((map) => <option key={map.id} value={map.id}>{map.name}</option>)}</select></label><label>출발점 <b>*</b><select aria-label="시작 위치 선택" value={startNodeId} onChange={(event) => { setStartNodeId(event.target.value); invalidate() }}>{starts.map((node) => <option key={node.id} value={node.id}>{node.id} · {node.label}</option>)}</select></label><label className="wide">재난 상황 <b>*</b><select className={fieldErrors.scenario ? 'invalid' : ''} aria-label="시나리오 선택" value={scenarioId} onChange={(event) => { setFieldErrors((e) => ({ ...e, scenario: undefined })); selectScenario(event.target.value) }}><option value="">선택해 주세요</option><option value="baseline">재난 없음 · 기준 조건</option>{scenarios.filter((scenario) => scenario.map_id === selectedMapId && !scenario.id.startsWith('baseline')).map((scenario) => <option key={scenario.id} value={scenario.id}>{scenario.name}</option>)}</select>{fieldErrors.scenario && <small className="field-error">{fieldErrors.scenario}</small>}</label><label>평지 속도 (m/s) <b>*</b><input className={currentErrors.walking ? 'invalid' : ''} aria-label="평지 이동속도" type="number" min="0.1" max="10" step="0.1" value={walkingSpeed} onChange={(event) => updateNumber(setWalkingSpeed, Number(event.target.value))} />{currentErrors.walking && <small className="field-error">{currentErrors.walking}</small>}</label><label>계단 속도 (m/s) <b>*</b><input className={currentErrors.stair ? 'invalid' : ''} aria-label="계단 이동속도" type="number" min="0.1" max="10" step="0.1" value={stairSpeed} onChange={(event) => updateNumber(setStairSpeed, Number(event.target.value))} />{currentErrors.stair && <small className="field-error">{currentErrors.stair}</small>}</label><label className="wide">출발 지연 (초)<input className={currentErrors.reaction ? 'invalid' : ''} aria-label="출발 반응시간" type="number" min="0" max="3600" value={reactionDelay} onChange={(event) => updateNumber(setReactionDelay, Number(event.target.value))} />{currentErrors.reaction && <small className="field-error">{currentErrors.reaction}</small>}</label></div>
+        <fieldset className="delay-controls"><legend>추가 지연 (사용자 가정 고정값)</legend><label>적용 구간<select aria-label="혼잡 구간 선택" value={congestionEdgeId} onChange={(event) => { setCongestionEdgeId(event.target.value); invalidate() }}><option value="">구간 선택</option>{mapData?.edges.map((edge) => <option key={edge.id} value={edge.id}>{edge.id} · {edge.source}–{edge.target}</option>)}</select></label><label>추가 지연시간 (초)<input className={fieldErrors.congestion ? 'invalid' : ''} aria-label="혼잡 추가 지연" type="number" min="0" value={congestionDelay} onChange={(event) => { setCongestionDelay(Number(event.target.value)); invalidate() }} />{fieldErrors.congestion && <small className="field-error">{fieldErrors.congestion}</small>}</label><button className="secondary compact" disabled={!congestionEdgeId || Boolean(currentErrors.congestion)} onClick={addCongestion}>지연 적용</button></fieldset><p className="condition-note">혼잡 지연은 모델이 군중 정체를 예측한 값이 아니라 사용자가 선택한 구간에 적용하는 고정 가정값입니다.</p>{selectedScenario && <p className="condition-note scenario-note">{selectedScenario.description}</p>}<div className="button-row"><button className="secondary" disabled={!canCalculate} onClick={() => void runAction('calculate')}>현재 조건만 계산</button><button disabled={!canCalculate} onClick={() => void runAction('compare')}>{actionLoading ? '계산 중…' : '기본 경로와 비교'}</button></div>{!scenarioId && <p className="required-hint">필수조건을 입력하면 계산 버튼이 활성화됩니다.</p>}</section>
+        <section className="panel results" aria-label="계산 결과"><div className="panel-heading"><div><span>결과 비교</span><h2>{comparison ? '재난 전 참고 경로 · 조건 반영 경로' : '현재 조건 계산 결과'}</h2></div></div>{comparison ? <><div className="route-cards"><RouteCard title="재난 전 참고 경로" route={comparison.baseline} tone="baseline" /><RouteCard title="조건 반영 경로" route={comparison.scenario} tone="scenario" /></div>{comparison.scenario.reachable && <div className="delta-strip"><span>우회 거리 <strong>{signedMetric(comparison.distance_delta_m, ' m')}</strong></span><span>시간 변화 <strong>{signedMetric(comparison.total_time_delta_s, ' 초')}</strong></span></div>}{comparison.change_reasons.map((reason) => <p key={reason} className="reason">{reason}</p>)}</> : <RouteCard title="현재 조건 계산 결과" route={route} tone="scenario" />}</section>
+        <section className="panel segments" aria-label="경로 구간"><div className="panel-heading"><div><span>경로 구간</span><h2>단순화 계산 그래프</h2></div></div>{mapData && <RouteSegments mapData={mapData} route={activeRoute} conditions={conditions} />}</section></aside></div>
+    {(mapData?.metadata.safety_notice || selectedScenario?.assumption_notice) && <div className="notice"><strong>실험 안내</strong><span>{selectedScenario?.assumption_notice || mapData?.metadata.safety_notice}</span></div>}<footer>서울역 일부 구역을 단순화한 비교 실험이며, 실제 안전성·골든타임·생존율·안내 효과를 검증하지 않습니다.</footer></>}
+  </main>
 }

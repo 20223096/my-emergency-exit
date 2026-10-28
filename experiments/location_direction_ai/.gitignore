@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+approved-images/
+images/
+evaluation-output/
+

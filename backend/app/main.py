@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import maps, routes, scenarios
+from app.api import maps, multi_agent, routes, scenarios
 from app.models.schemas import HealthResponse
 
 app = FastAPI(
@@ -24,6 +24,7 @@ app.add_middleware(
 app.include_router(maps.router)
 app.include_router(scenarios.router)
 app.include_router(routes.router)
+app.include_router(multi_agent.router)
 
 
 @app.get("/api/health", response_model=HealthResponse, tags=["health"])

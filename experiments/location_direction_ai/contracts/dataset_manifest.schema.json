@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "location-direction-dataset-manifest-v1",
+  "title": "Location/direction trial dataset manifest",
+  "type": "object",
+  "required": ["schema_version", "dataset_id", "location_label_scope", "records"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "location_label_scope": {
+      "const": "EXPERIMENT_ONLY_NOT_VERIFIED_AS_REAL_GRAPH_NODE"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "image_id", "image_path", "location_id", "facing_direction",
+          "capture_session_id", "reference_or_test", "human_verified",
+          "permission_status", "privacy_review_status", "quality_flags"
+        ],
+        "properties": {
+          "image_id": {"type": "string", "minLength": 1},
+          "image_path": {"type": "string", "minLength": 1},
+          "location_id": {"type": "string", "minLength": 1},
+          "facing_direction": {"type": "string", "minLength": 1},
+          "capture_session_id": {"type": "string", "minLength": 1},
+          "reference_or_test": {"enum": ["REFERENCE", "TEST"]},
+          "human_verified": {"type": "boolean"},
+          "permission_status": {
+            "enum": ["APPROVED_FOR_EVALUATION", "PENDING", "REJECTED"]
+          },
+          "privacy_review_status": {
+            "const": "CLEARED_NO_PERSONAL_DATA"
+          },
+          "quality_flags": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "BLUR", "LOW_LIGHT", "OCCLUSION", "PARTIAL_SIGNAGE",
+                "GLARE", "MOTION_BLUR", "OUT_OF_SCOPE", "NONE"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

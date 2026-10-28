@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="850" viewBox="0 0 1400 850" role="img" aria-labelledby="title desc">
+  <title id="title">서울역 일부 단순화 그래프의 안내 후보 노드</title>
+  <desc id="desc">실제 지도 좌표가 아닌 프로토타입 그래프 상대좌표에 C_EAST, C_WEST, P_SOUTH, C_CENTER 안내 후보를 표시한 개념도</desc>
+  <rect width="1400" height="850" fill="#f7f8fb"/>
+  <text x="60" y="66" font-family="sans-serif" font-size="30" font-weight="700" fill="#171719">프로토타입 그래프 · 안내 후보 지점</text>
+  <text x="60" y="100" font-family="sans-serif" font-size="17" fill="#60646c">실제 서울역 지도·시설 좌표가 아닌 SVG 상대좌표 개념도 / 공식 피난 안내 아님</text>
+  <rect x="55" y="135" width="1290" height="610" rx="20" fill="#fff" stroke="#dfe3ea" stroke-width="2"/>
+  <g transform="translate(110 160) scale(105 58)" stroke="#c8cdd6" stroke-width="0.055" fill="none" stroke-linecap="round">
+    <path d="M8 3L7 3 M1 5L3 5 M4 8L5 8 M5 8L5.5 7.5 M5.5 7.5L5.5 5 M5 8L3.5 7.5 M3.5 7.5L3.5 5.5 M5.5 5L5 4 M3.5 5.5L3 5 M3 5L5 4 M5 4L7 3 M7 3L9 2.5 M9 2.5L10 2 M5 4L7 1.5 M7 1.5L8 .5 M5 4L5 1.5 M5 1.5L5 .5 M3 5L2.5 2.5 M2.5 2.5L2.5 1.3 M3 5L1 3.5 M1 3.5L0 3"/>
+  </g>
+  <g transform="translate(110 160) scale(105 58)" fill="none" stroke-linecap="round">
+    <path d="M4 8L5 8L5.5 7.5L5.5 5L5 4L7 1.5L8 .5" stroke="#3e5af4" stroke-width="0.095"/>
+    <path d="M5 8L3.5 7.5L3.5 5.5L3 5L2.5 2.5L2.5 1.3" stroke="#02a67c" stroke-width="0.095" stroke-dasharray=".18 .12"/>
+    <path d="M7 1.5L8 .5" stroke="#ef4452" stroke-width="0.13"/>
+    <path d="M5.5 7.5L5.5 5" stroke="#ef4452" stroke-width="0.13" stroke-dasharray=".2 .1"/>
+  </g>
+  <g font-family="sans-serif" font-size="14" text-anchor="middle">
+    <g fill="#222"><circle cx="950" cy="334" r="8"/><text x="950" y="318">S1</text><circle cx="215" cy="450" r="8"/><text x="215" y="434">S2</text><circle cx="530" cy="624" r="8"/><text x="530" y="650">S3</text></g>
+    <g fill="#fff" stroke="#7a53c8" stroke-width="5">
+      <circle cx="845" cy="334" r="17"/><circle cx="425" cy="450" r="17"/><circle cx="635" cy="392" r="17"/><circle cx="635" cy="624" r="17"/>
+    </g>
+    <g fill="#4e2d91" font-weight="700">
+      <text x="845" y="306">C_EAST · S1 후보</text><text x="425" y="422">C_WEST · S2/B 후보</text><text x="635" y="364">C_CENTER · 화재 A 최초 분기</text><text x="635" y="664">P_SOUTH · 화재 B 최초 분기</text>
+    </g>
+    <g fill="#171719" font-size="13">
+      <text x="1160" y="260">EXIT_10</text><text x="950" y="190">EXIT_11</text><text x="635" y="190">EXIT_12</text><text x="372" y="236">EXIT_13</text><text x="110" y="318">EXIT_14</text>
+    </g>
+  </g>
+  <g font-family="sans-serif" font-size="16">
+    <rect x="80" y="770" width="24" height="6" fill="#3e5af4"/><text x="115" y="779" fill="#383b40">S3 기본 경로</text>
+    <rect x="290" y="770" width="24" height="6" fill="#02a67c"/><text x="325" y="779" fill="#383b40">화재 B 대체 경로</text>
+    <rect x="535" y="770" width="24" height="6" fill="#ef4452"/><text x="570" y="779" fill="#383b40">입력 차단 간선</text>
+    <circle cx="770" cy="773" r="10" fill="#fff" stroke="#7a53c8" stroke-width="4"/><text x="790" y="779" fill="#383b40">안내 후보 분기 노드</text>
+  </g>
+</svg>
