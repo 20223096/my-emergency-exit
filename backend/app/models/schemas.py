@@ -161,3 +161,55 @@ class CompareResult(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     service: str
+
+
+class MultiAgentSimulationRequest(ScenarioConditions):
+    map_id: str
+    start_counts: dict[str, Annotated[int, Field(ge=0, le=10000)]]
+    start_delays_s: dict[str, Annotated[float, Field(ge=0, le=3600)]] = Field(default_factory=dict)
+    walking_speed_mps: Annotated[float, Field(gt=0, le=10)] = 1.2
+    stair_speed_mps: Annotated[float, Field(gt=0, le=10)] = 0.8
+    corridor_capacity_per_s: Annotated[float, Field(gt=0, le=1000)] = 2.0
+    stair_capacity_per_s: Annotated[float, Field(gt=0, le=1000)] = 1.0
+    edge_capacity_overrides_per_s: dict[str, Annotated[float, Field(gt=0, le=1000)]] = Field(default_factory=dict)
+    time_step_s: Annotated[float, Field(ge=1, le=60)] = 1.0
+    max_elapsed_s: Annotated[float, Field(gt=0, le=86400)] = 3600.0
+
+
+class MultiAgentEdgeMetric(BaseModel):
+    edge_id: str
+    capacity_per_s: float
+    admitted_count: int
+    max_queue_count: int
+    max_wait_s: float
+    min_admission_interval_s: float | None
+
+
+class MultiAgentTimelinePoint(BaseModel):
+    time_s: float
+    total_waiting: int
+    edge_queues: dict[str, int]
+
+
+class MultiAgentSimulationResult(BaseModel):
+    model_name: str
+    model_version: str
+    assumption_notice: str
+    total_initial_people: int
+    arrived_people: int
+    arrivals_by_exit: dict[str, int]
+    not_arrived_people: int
+    no_route_people: int
+    end_state_counts: dict[str, int]
+    last_arrival_time_s: float | None
+    average_arrival_time_s: float | None
+    simulation_end_time_s: float
+    end_reason: str
+    edge_metrics: list[MultiAgentEdgeMetric]
+    timeline: list[MultiAgentTimelinePoint]
+    bottleneck_edge_ids: list[str]
+
+
+class MultiAgentComparisonResult(BaseModel):
+    baseline: MultiAgentSimulationResult
+    scenario: MultiAgentSimulationResult

@@ -21,6 +21,7 @@ interface MapCanvasProps {
   hazardEdgeIds?: string[]
   showBaseline?: boolean
   showScenario?: boolean
+  simulatedQueueLevels?: Record<string, 'smooth' | 'waiting' | 'concentrated'>
 }
 
 export function MapCanvas({
@@ -35,6 +36,7 @@ export function MapCanvas({
   hazardEdgeIds = [],
   showBaseline = true,
   showScenario = true,
+  simulatedQueueLevels,
 }: MapCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [labelMeasurements, setLabelMeasurements] = useState<Map<string, LabelMeasurement>>(new Map())
@@ -100,6 +102,7 @@ export function MapCanvas({
         <span className="legend-congested">혼잡</span>
         <span className="legend-stair">계단/층 연결</span>
         <span className="legend-fire">화재 가정 위치</span>
+        {simulatedQueueLevels && <><span className="legend-sim-smooth">모의 통행 원활</span><span className="legend-sim-waiting">모의 대기 발생</span><span className="legend-sim-concentrated">모의 대기 집중</span></>}
       </div>
       <div className="map-viewport">
         <svg
@@ -137,7 +140,8 @@ export function MapCanvas({
             const blocked = blockedEdges.has(edge.id)
             const congested = edge.id in congestionDelays
             const hazard = hazardEdges.has(edge.id)
-            const classes = ['map-edge', edge.type === 'STAIR' && 'is-stair', blocked && 'is-blocked', congested && 'is-congested', hazard && 'is-hazard']
+            const queueLevel = simulatedQueueLevels?.[edge.id]
+            const classes = ['map-edge', edge.type === 'STAIR' && 'is-stair', blocked && 'is-blocked', congested && 'is-congested', hazard && 'is-hazard', queueLevel && `is-sim-${queueLevel}`]
               .filter(Boolean).join(' ')
             return (
               <g key={edge.id} data-testid={`edge-${edge.id}`} data-edge-id={edge.id}>

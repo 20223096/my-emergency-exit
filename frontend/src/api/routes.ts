@@ -3,6 +3,8 @@ import type {
   HealthResponse,
   IndoorMap,
   MapSummary,
+  MultiAgentComparisonResult,
+  MultiAgentSimulationRequest,
   RouteComparison,
   RouteRequest,
   RouteResult,
@@ -20,6 +22,11 @@ export const calculateRoute = (request: RouteRequest) => apiRequest<RouteResult>
 })
 
 export const compareRoutes = (request: RouteRequest) => apiRequest<RouteComparison>('/api/routes/compare', {
+  method: 'POST',
+  body: JSON.stringify(request),
+})
+
+export const compareMultiAgent = (request: MultiAgentSimulationRequest) => apiRequest<MultiAgentComparisonResult>('/api/multi-agent/compare', {
   method: 'POST',
   body: JSON.stringify(request),
 })

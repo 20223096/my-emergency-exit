@@ -108,3 +108,27 @@ export interface HealthResponse {
   status: string
   service: string
 }
+
+export interface MultiAgentSimulationRequest extends ScenarioConditions {
+  map_id: string
+  start_counts: Record<string, number>
+  start_delays_s: Record<string, number>
+  walking_speed_mps: number
+  stair_speed_mps: number
+  corridor_capacity_per_s: number
+  stair_capacity_per_s: number
+  edge_capacity_overrides_per_s: Record<string, number>
+  time_step_s: number
+  max_elapsed_s: number
+}
+
+export interface MultiAgentEdgeMetric { edge_id: string; capacity_per_s: number; admitted_count: number; max_queue_count: number; max_wait_s: number; min_admission_interval_s: number | null }
+export interface MultiAgentTimelinePoint { time_s: number; total_waiting: number; edge_queues: Record<string, number> }
+export interface MultiAgentSimulationResult {
+  model_name: string; model_version: string; assumption_notice: string
+  total_initial_people: number; arrived_people: number; arrivals_by_exit: Record<string, number>
+  not_arrived_people: number; no_route_people: number; end_state_counts: Record<string, number>
+  last_arrival_time_s: number | null; average_arrival_time_s: number | null; simulation_end_time_s: number; end_reason: string
+  edge_metrics: MultiAgentEdgeMetric[]; timeline: MultiAgentTimelinePoint[]; bottleneck_edge_ids: string[]
+}
+export interface MultiAgentComparisonResult { baseline: MultiAgentSimulationResult; scenario: MultiAgentSimulationResult }
