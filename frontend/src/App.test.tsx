@@ -126,6 +126,7 @@ describe('development screen', () => {
     expect(JSON.parse(String(calls.at(-1)?.[1]?.body))).toMatchObject({
       congestion_delays: { A06: 20 }, stair_speed_mps: 0.8,
     })
+    await user.click(screen.getByRole('button', { name: '변경하기' }))
     await user.click(screen.getByRole('button', { name: '초기화' }))
     expect(screen.getByLabelText('혼잡 구간 선택')).toHaveValue('')
     expect(screen.getAllByText('아직 계산하지 않았습니다.')).toHaveLength(1)
@@ -221,6 +222,7 @@ describe('development screen', () => {
     await user.selectOptions(screen.getByLabelText('시나리오 선택'), scenarioFixture.id)
     await user.click(screen.getByRole('button', { name: '기본 경로와 비교' }))
     expect(await screen.findByTestId('baseline-A01')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '변경하기' }))
     await user.clear(screen.getByLabelText('출발 반응시간'))
     await user.type(screen.getByLabelText('출발 반응시간'), '10')
     expect(screen.getByText(/이전 결과를 지웠습니다/)).toBeInTheDocument()
