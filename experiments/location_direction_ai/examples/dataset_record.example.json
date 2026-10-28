@@ -1,0 +1,13 @@
+{
+  "image_id": "EXAMPLE_ONLY_NOT_AN_ACTUAL_IMAGE",
+  "image_path": "approved-images/example-only.jpg",
+  "location_id": "EXPERIMENT_SITE_A",
+  "facing_direction": "DIRECTION_01",
+  "capture_session_id": "SESSION_EXAMPLE",
+  "reference_or_test": "TEST",
+  "human_verified": true,
+  "permission_status": "APPROVED_FOR_EVALUATION",
+  "privacy_review_status": "CLEARED_NO_PERSONAL_DATA",
+  "quality_flags": ["NONE"]
+}
+

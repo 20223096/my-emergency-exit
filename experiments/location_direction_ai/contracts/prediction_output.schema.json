@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "location-direction-predictions-v1",
+  "title": "Location/direction candidate output contract",
+  "type": "object",
+  "required": ["schema_version", "run_status", "model", "confidence_semantics", "records"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "run_status": {"enum": ["not_run", "completed"]},
+    "model": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["model_id", "model_version"],
+          "properties": {
+            "model_id": {"type": "string", "minLength": 1},
+            "model_version": {"type": "string", "minLength": 1}
+          }
+        }
+      ]
+    },
+    "confidence_semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score_type", "verified", "verification_note"],
+      "properties": {
+        "score_type": {"enum": ["UNSPECIFIED", "PROBABILITY", "SIMILARITY", "MARGIN", "OTHER"]},
+        "verified": {"type": "boolean"},
+        "verification_note": {"type": "string"}
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "image_id", "location_candidates", "direction_candidates",
+          "decidable", "abstention_reason"
+        ],
+        "properties": {
+          "image_id": {"type": "string", "minLength": 1},
+          "location_candidates": {"$ref": "#/$defs/candidates"},
+          "direction_candidates": {"$ref": "#/$defs/candidates"},
+          "decidable": {"type": "boolean"},
+          "abstention_reason": {
+            "enum": [
+              "NONE", "LOW_CONFIDENCE", "AMBIGUOUS_TOP_CANDIDATES",
+              "OUT_OF_SCOPE", "POOR_IMAGE_QUALITY", "MODEL_ERROR", "UNSUPPORTED_INPUT"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "confidence"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "confidence": {"type": "number"}
+        }
+      }
+    }
+  }
+}
+
