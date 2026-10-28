@@ -1,3 +1,5 @@
+import pytest
+
 from app.core.graph import repository
 from app.core.multi_agent import simulate_multi_agent
 from app.models.schemas import MultiAgentSimulationRequest
@@ -89,3 +91,22 @@ def test_api_rejects_unknown_exit_even_with_zero_people(client):
     response = client.post("/api/multi-agent/simulate", json=body)
     assert response.status_code == 422
     assert "unknown exit" in response.json()["detail"]
+
+
+@pytest.mark.parametrize(("count", "blocked", "max_elapsed", "exit_id", "arrived", "no_route", "last"), [
+    (1, [], 3600, "EXIT_11", 1, 0, 52.5),
+    (20, [], 3600, "EXIT_11", 20, 0, 71.5),
+    (100, [], 3600, "EXIT_11", 100, 0, 151.5),
+    (100, ["E11_OUT"], 3600, "EXIT_12", 100, 0, 154.833),
+    (100, ["STAIR_A"], 3600, "EXIT_13", 100, 0, 160.667),
+    (100, ["STAIR_A", "STAIR_B"], 3600, None, 0, 100, None),
+    (300, [], 60, "EXIT_11", 8, 0, 59.5),
+])
+def test_documented_s3_scenario_regressions(count, blocked, max_elapsed, exit_id, arrived, no_route, last):
+    result = simulate_multi_agent(repository.get_map(MAP_ID), request(
+        start_counts={"S3": count}, blocked_edge_ids=blocked, max_elapsed_s=max_elapsed,
+    ))
+    assert result.arrived_people == arrived
+    assert result.no_route_people == no_route
+    assert result.last_arrival_time_s == last
+    assert (next(iter(result.arrivals_by_exit), None)) == exit_id

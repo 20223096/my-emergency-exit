@@ -22,6 +22,8 @@ interface MapCanvasProps {
   showBaseline?: boolean
   showScenario?: boolean
   simulatedQueueLevels?: Record<string, 'smooth' | 'waiting' | 'concentrated'>
+  simulatedQueueCounts?: Record<string, number>
+  highlightedQueueEdgeIds?: string[]
 }
 
 export function MapCanvas({
@@ -37,6 +39,8 @@ export function MapCanvas({
   showBaseline = true,
   showScenario = true,
   simulatedQueueLevels,
+  simulatedQueueCounts = {},
+  highlightedQueueEdgeIds = [],
 }: MapCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [labelMeasurements, setLabelMeasurements] = useState<Map<string, LabelMeasurement>>(new Map())
@@ -52,6 +56,7 @@ export function MapCanvas({
   const blockedEdges = new Set(blockedEdgeIds)
   const blockedExits = new Set(blockedExitIds)
   const hazardEdges = new Set(hazardEdgeIds)
+  const highlightedQueueEdges = new Set(highlightedQueueEdgeIds)
   const displayLabels = new Map(visibleNodes.map((node) => [node.id, displayNodeLabel(node.id, node.label)]))
   const isSeoulPrototype = mapData.id === 'seoul-station-line4-prototype-v1'
   const statusObstacles: LayoutObstacle[] = visibleEdges.flatMap((edge) => {
@@ -102,7 +107,7 @@ export function MapCanvas({
         <span className="legend-congested">혼잡</span>
         <span className="legend-stair">계단/층 연결</span>
         <span className="legend-fire">화재 가정 위치</span>
-        {simulatedQueueLevels && <><span className="legend-sim-smooth">모의 통행 원활</span><span className="legend-sim-waiting">모의 대기 발생</span><span className="legend-sim-concentrated">모의 대기 집중</span></>}
+        {simulatedQueueLevels && <><span className="legend-sim-smooth">모의 통행 원활</span><span className="legend-sim-waiting">모의 대기 발생</span><span className="legend-sim-concentrated">모의 대기 집중</span><span className="legend-sim-peak">최대 대기열 구간</span></>}
       </div>
       <div className="map-viewport">
         <svg
@@ -141,7 +146,7 @@ export function MapCanvas({
             const congested = edge.id in congestionDelays
             const hazard = hazardEdges.has(edge.id)
             const queueLevel = simulatedQueueLevels?.[edge.id]
-            const classes = ['map-edge', edge.type === 'STAIR' && 'is-stair', blocked && 'is-blocked', congested && 'is-congested', hazard && 'is-hazard', queueLevel && `is-sim-${queueLevel}`]
+            const classes = ['map-edge', edge.type === 'STAIR' && 'is-stair', blocked && 'is-blocked', congested && 'is-congested', hazard && 'is-hazard', queueLevel && `is-sim-${queueLevel}`, highlightedQueueEdges.has(edge.id) && 'is-sim-peak']
               .filter(Boolean).join(' ')
             return (
               <g key={edge.id} data-testid={`edge-${edge.id}`} data-edge-id={edge.id}>
@@ -196,6 +201,13 @@ export function MapCanvas({
             )
           })}
         </g>
+
+        {simulatedQueueLevels && <g aria-label="모의 최대 대기열 표식">
+          {visibleEdges.filter((edge) => highlightedQueueEdges.has(edge.id)).map((edge) => {
+            const midpoint = getEdgeGeometry(mapData, edge).midpoint
+            return <text key={`queue-${edge.id}`} x={midpoint.x} y={midpoint.y - .34} className="sim-queue-label">{edge.id} · 최대 {simulatedQueueCounts[edge.id] || 0}명</text>
+          })}
+        </g>}
 
         <g aria-label="노드">
           {visibleNodes.map((node) => {

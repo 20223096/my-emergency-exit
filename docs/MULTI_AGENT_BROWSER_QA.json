@@ -1,309 +1,526 @@
 {
-  "scenario": "S3 100 fire B",
-  "api": {
-    "model_name": "deterministic-fixed-route-fifo-capacity-experiment",
-    "model_version": "0.1.0",
-    "assumption_notice": "가정한 간선 처리용량과 고정 경로 정책을 사용하는 실험 모델이며 실제 군중 예측이 아닙니다.",
-    "total_initial_people": 100,
-    "arrived_people": 100,
-    "arrivals_by_exit": {
-      "EXIT_13": 100
+  "scenarios": {
+    "fire_b": {
+      "api": {
+        "model_name": "deterministic-fixed-route-fifo-capacity-experiment",
+        "model_version": "0.1.0",
+        "assumption_notice": "가정한 간선 처리용량과 고정 경로 정책을 사용하는 실험 모델이며 실제 군중 예측이 아닙니다.",
+        "total_initial_people": 100,
+        "arrived_people": 100,
+        "arrivals_by_exit": {
+          "EXIT_13": 100
+        },
+        "not_arrived_people": 0,
+        "no_route_people": 0,
+        "end_state_counts": {
+          "arrived": 100,
+          "waiting": 0,
+          "in_transit": 0,
+          "pending_release": 0,
+          "no_route": 0
+        },
+        "last_arrival_time_s": 160.667,
+        "average_arrival_time_s": 111.167,
+        "simulation_end_time_s": 160.667,
+        "end_reason": "ALL_REACHABLE_AGENTS_ARRIVED",
+        "edge_metrics": [
+          {
+            "edge_id": "C02",
+            "capacity_per_s": 2,
+            "admitted_count": 100,
+            "max_queue_count": 0,
+            "max_wait_s": 0,
+            "min_admission_interval_s": 1
+          },
+          {
+            "edge_id": "E13_IN",
+            "capacity_per_s": 2,
+            "admitted_count": 100,
+            "max_queue_count": 0,
+            "max_wait_s": 0,
+            "min_admission_interval_s": 1
+          },
+          {
+            "edge_id": "E13_OUT",
+            "capacity_per_s": 2,
+            "admitted_count": 100,
+            "max_queue_count": 0,
+            "max_wait_s": 0,
+            "min_admission_interval_s": 1
+          },
+          {
+            "edge_id": "L4P01",
+            "capacity_per_s": 2,
+            "admitted_count": 100,
+            "max_queue_count": 99,
+            "max_wait_s": 49.5,
+            "min_admission_interval_s": 0.5
+          },
+          {
+            "edge_id": "L4P03",
+            "capacity_per_s": 2,
+            "admitted_count": 100,
+            "max_queue_count": 0,
+            "max_wait_s": 0,
+            "min_admission_interval_s": 0.5
+          },
+          {
+            "edge_id": "STAIR_B",
+            "capacity_per_s": 1,
+            "admitted_count": 100,
+            "max_queue_count": 50,
+            "max_wait_s": 49.5,
+            "min_admission_interval_s": 1
+          }
+        ],
+        "timeline": [
+          {
+            "time_s": 0,
+            "total_waiting": 99,
+            "edge_queues": {
+              "L4P01": 99
+            }
+          },
+          {
+            "time_s": 5,
+            "total_waiting": 89,
+            "edge_queues": {
+              "L4P01": 89
+            }
+          },
+          {
+            "time_s": 10,
+            "total_waiting": 79,
+            "edge_queues": {
+              "L4P01": 79
+            }
+          },
+          {
+            "time_s": 15,
+            "total_waiting": 69,
+            "edge_queues": {
+              "L4P01": 69
+            }
+          },
+          {
+            "time_s": 20,
+            "total_waiting": 62,
+            "edge_queues": {
+              "L4P01": 59,
+              "STAIR_B": 3
+            }
+          },
+          {
+            "time_s": 25,
+            "total_waiting": 57,
+            "edge_queues": {
+              "L4P01": 49,
+              "STAIR_B": 8
+            }
+          },
+          {
+            "time_s": 30,
+            "total_waiting": 52,
+            "edge_queues": {
+              "L4P01": 39,
+              "STAIR_B": 13
+            }
+          },
+          {
+            "time_s": 35,
+            "total_waiting": 47,
+            "edge_queues": {
+              "L4P01": 29,
+              "STAIR_B": 18
+            }
+          },
+          {
+            "time_s": 40,
+            "total_waiting": 42,
+            "edge_queues": {
+              "L4P01": 19,
+              "STAIR_B": 23
+            }
+          },
+          {
+            "time_s": 45,
+            "total_waiting": 37,
+            "edge_queues": {
+              "L4P01": 9,
+              "STAIR_B": 28
+            }
+          },
+          {
+            "time_s": 50,
+            "total_waiting": 33,
+            "edge_queues": {
+              "STAIR_B": 33
+            }
+          },
+          {
+            "time_s": 55,
+            "total_waiting": 38,
+            "edge_queues": {
+              "STAIR_B": 38
+            }
+          },
+          {
+            "time_s": 60,
+            "total_waiting": 43,
+            "edge_queues": {
+              "STAIR_B": 43
+            }
+          },
+          {
+            "time_s": 65,
+            "total_waiting": 48,
+            "edge_queues": {
+              "STAIR_B": 48
+            }
+          },
+          {
+            "time_s": 70,
+            "total_waiting": 46,
+            "edge_queues": {
+              "STAIR_B": 46
+            }
+          },
+          {
+            "time_s": 75,
+            "total_waiting": 41,
+            "edge_queues": {
+              "STAIR_B": 41
+            }
+          },
+          {
+            "time_s": 80,
+            "total_waiting": 36,
+            "edge_queues": {
+              "STAIR_B": 36
+            }
+          },
+          {
+            "time_s": 85,
+            "total_waiting": 31,
+            "edge_queues": {
+              "STAIR_B": 31
+            }
+          },
+          {
+            "time_s": 90,
+            "total_waiting": 26,
+            "edge_queues": {
+              "STAIR_B": 26
+            }
+          },
+          {
+            "time_s": 95,
+            "total_waiting": 21,
+            "edge_queues": {
+              "STAIR_B": 21
+            }
+          },
+          {
+            "time_s": 100,
+            "total_waiting": 16,
+            "edge_queues": {
+              "STAIR_B": 16
+            }
+          },
+          {
+            "time_s": 105,
+            "total_waiting": 11,
+            "edge_queues": {
+              "STAIR_B": 11
+            }
+          },
+          {
+            "time_s": 110,
+            "total_waiting": 6,
+            "edge_queues": {
+              "STAIR_B": 6
+            }
+          },
+          {
+            "time_s": 115,
+            "total_waiting": 1,
+            "edge_queues": {
+              "STAIR_B": 1
+            }
+          },
+          {
+            "time_s": 120,
+            "total_waiting": 0,
+            "edge_queues": {}
+          },
+          {
+            "time_s": 125,
+            "total_waiting": 0,
+            "edge_queues": {}
+          },
+          {
+            "time_s": 130,
+            "total_waiting": 0,
+            "edge_queues": {}
+          },
+          {
+            "time_s": 135,
+            "total_waiting": 0,
+            "edge_queues": {}
+          },
+          {
+            "time_s": 140,
+            "total_waiting": 0,
+            "edge_queues": {}
+          },
+          {
+            "time_s": 145,
+            "total_waiting": 0,
+            "edge_queues": {}
+          },
+          {
+            "time_s": 150,
+            "total_waiting": 0,
+            "edge_queues": {}
+          },
+          {
+            "time_s": 155,
+            "total_waiting": 0,
+            "edge_queues": {}
+          },
+          {
+            "time_s": 160,
+            "total_waiting": 0,
+            "edge_queues": {}
+          },
+          {
+            "time_s": 160.667,
+            "total_waiting": 0,
+            "edge_queues": {}
+          }
+        ],
+        "bottleneck_edge_ids": [
+          "L4P01",
+          "STAIR_B"
+        ]
+      },
+      "resultText": "RESULT COMPARISON\n차단 전후 한눈에 비교\n\n평균은 도착한 인원만 계산합니다.\n\n지표\t차단 전 기준\t조건 반영\n도착 인원\t100 / 100명\t100 / 100명\n경로 없음\t0명\t0명\n시간 제한 미도착\t0명\t0명\n평균 도착 모의 시간\t102초\n전체 도착 인원 평균\n\t111.167초\n전체 도착 인원 평균\n\n마지막 도착 모의 시간\t151.5초\t160.667초\n선택된 출구\t11번 출구 100명\t13번 출구 100명\n주요 병목 후보\tL4P01 · 4호선 승강장 회현 방향 계단 주변 ↔ 회현 방향 승강장 구간 · 최대 99명\tL4P01 · 4호선 승강장 회현 방향 계단 주변 ↔ 회현 방향 승강장 구간 · 최대 99명\n차단 전 기준\n모든 인원이 도착했습니다\n\n현재 가정과 제한시간 안에서 경로가 있는 모든 인원이 도착했습니다.\n\n조건 반영\n모든 인원이 도착했습니다\n\n현재 가정과 제한시간 안에서 경로가 있는 모든 인원이 도착했습니다.\n\nQUEUE OVER TIME\n시간별 모의 대기 인원\n차단 전 최대 99명\n조건 반영 최대 99명\n경과시간(초)\n대기 인원(명)\n0\n160.667\n99\n시간별 값 표 보기\n\n입력 가정으로 계산한 대기열이며 실제 군중 밀도나 실측 혼잡도가 아닙니다.\n\n가정 조건 내 병목 후보\n\n조건 반영 결과의 FIFO 대기열이 큰 순서입니다.\n\n1\nL4P01\n4호선 승강장 회현 방향 계단 주변 ↔ 회현 방향 승강장 구간\n최대 대기 99명\n최대 대기시간 49.5초\n2\nSTAIR_B\n대체 계단 승강장측 ↔ 대체 계단 대합실측\n최대 대기 50명\n최대 대기시간 49.5초\n실제 서울역의 위험 지점이나 안내 설치 후보를 의미하지 않습니다."
     },
-    "not_arrived_people": 0,
-    "no_route_people": 0,
-    "end_state_counts": {
-      "arrived": 100,
-      "waiting": 0,
-      "in_transit": 0,
-      "pending_release": 0,
-      "no_route": 0
+    "no_route": {
+      "api": {
+        "model_name": "deterministic-fixed-route-fifo-capacity-experiment",
+        "model_version": "0.1.0",
+        "assumption_notice": "가정한 간선 처리용량과 고정 경로 정책을 사용하는 실험 모델이며 실제 군중 예측이 아닙니다.",
+        "total_initial_people": 100,
+        "arrived_people": 0,
+        "arrivals_by_exit": {},
+        "not_arrived_people": 100,
+        "no_route_people": 100,
+        "end_state_counts": {
+          "arrived": 0,
+          "waiting": 0,
+          "in_transit": 0,
+          "pending_release": 0,
+          "no_route": 100
+        },
+        "last_arrival_time_s": null,
+        "average_arrival_time_s": null,
+        "simulation_end_time_s": 0,
+        "end_reason": "NO_REACHABLE_ROUTES",
+        "edge_metrics": [],
+        "timeline": [
+          {
+            "time_s": 0,
+            "total_waiting": 0,
+            "edge_queues": {}
+          }
+        ],
+        "bottleneck_edge_ids": []
+      },
+      "resultText": "RESULT COMPARISON\n차단 전후 한눈에 비교\n\n평균은 도착한 인원만 계산합니다.\n\n지표\t차단 전 기준\t조건 반영\n도착 인원\t100 / 100명\t0 / 100명\n경로 없음\t0명\t100명\n시간 제한 미도착\t0명\t0명\n평균 도착 모의 시간\t102초\n전체 도착 인원 평균\n\t—\n도착자 없음\n\n마지막 도착 모의 시간\t151.5초\t—\n선택된 출구\t11번 출구 100명\t선택된 출구 없음\n주요 병목 후보\tL4P01 · 4호선 승강장 회현 방향 계단 주변 ↔ 회현 방향 승강장 구간 · 최대 99명\t기록된 대기열 없음\n차단 전 기준\n모든 인원이 도착했습니다\n\n현재 가정과 제한시간 안에서 경로가 있는 모든 인원이 도착했습니다.\n\n조건 반영\n이용 가능한 경로가 없습니다\n\n차단 조건 때문에 출발 시점부터 출구까지 연결된 경로를 찾지 못했습니다.\n\nQUEUE OVER TIME\n시간별 모의 대기 인원\n차단 전 최대 99명\n조건 반영 최대 0명\n경과시간(초)\n대기 인원(명)\n0\n151.5\n99\n시간별 값 표 보기\n\n입력 가정으로 계산한 대기열이며 실제 군중 밀도나 실측 혼잡도가 아닙니다.\n\n가정 조건 내 병목 후보\n\n조건 반영 결과의 FIFO 대기열이 큰 순서입니다.\n\n현재 기록 간격에서 발생한 대기열이 없습니다.\n\n실제 서울역의 위험 지점이나 안내 설치 후보를 의미하지 않습니다."
     },
-    "last_arrival_time_s": 160.667,
-    "average_arrival_time_s": 111.167,
-    "simulation_end_time_s": 160.667,
-    "end_reason": "ALL_REACHABLE_AGENTS_ARRIVED",
-    "edge_metrics": [
-      {
-        "edge_id": "C02",
-        "capacity_per_s": 2,
-        "admitted_count": 100,
-        "max_queue_count": 0,
-        "max_wait_s": 0,
-        "min_admission_interval_s": 1
+    "timeout": {
+      "api": {
+        "model_name": "deterministic-fixed-route-fifo-capacity-experiment",
+        "model_version": "0.1.0",
+        "assumption_notice": "가정한 간선 처리용량과 고정 경로 정책을 사용하는 실험 모델이며 실제 군중 예측이 아닙니다.",
+        "total_initial_people": 300,
+        "arrived_people": 8,
+        "arrivals_by_exit": {
+          "EXIT_11": 8
+        },
+        "not_arrived_people": 292,
+        "no_route_people": 0,
+        "end_state_counts": {
+          "arrived": 8,
+          "waiting": 227,
+          "in_transit": 65,
+          "pending_release": 0,
+          "no_route": 0
+        },
+        "last_arrival_time_s": 59.5,
+        "average_arrival_time_s": 56,
+        "simulation_end_time_s": 60,
+        "end_reason": "TIMEOUT_WITH_ACTIVE_AGENTS",
+        "edge_metrics": [
+          {
+            "edge_id": "C01",
+            "capacity_per_s": 2,
+            "admitted_count": 31,
+            "max_queue_count": 0,
+            "max_wait_s": 0,
+            "min_admission_interval_s": 1
+          },
+          {
+            "edge_id": "E11_IN",
+            "capacity_per_s": 2,
+            "admitted_count": 26,
+            "max_queue_count": 0,
+            "max_wait_s": 0,
+            "min_admission_interval_s": 1
+          },
+          {
+            "edge_id": "E11_OUT",
+            "capacity_per_s": 2,
+            "admitted_count": 18,
+            "max_queue_count": 0,
+            "max_wait_s": 0,
+            "min_admission_interval_s": 1
+          },
+          {
+            "edge_id": "L4P01",
+            "capacity_per_s": 2,
+            "admitted_count": 121,
+            "max_queue_count": 299,
+            "max_wait_s": 60,
+            "min_admission_interval_s": 0.5
+          },
+          {
+            "edge_id": "L4P02",
+            "capacity_per_s": 2,
+            "admitted_count": 107,
+            "max_queue_count": 0,
+            "max_wait_s": 0,
+            "min_admission_interval_s": 0.5
+          },
+          {
+            "edge_id": "STAIR_A",
+            "capacity_per_s": 1,
+            "admitted_count": 49,
+            "max_queue_count": 49,
+            "max_wait_s": 24,
+            "min_admission_interval_s": 1
+          }
+        ],
+        "timeline": [
+          {
+            "time_s": 0,
+            "total_waiting": 299,
+            "edge_queues": {
+              "L4P01": 299
+            }
+          },
+          {
+            "time_s": 5,
+            "total_waiting": 289,
+            "edge_queues": {
+              "L4P01": 289
+            }
+          },
+          {
+            "time_s": 10,
+            "total_waiting": 279,
+            "edge_queues": {
+              "L4P01": 279
+            }
+          },
+          {
+            "time_s": 15,
+            "total_waiting": 272,
+            "edge_queues": {
+              "L4P01": 269,
+              "STAIR_A": 3
+            }
+          },
+          {
+            "time_s": 20,
+            "total_waiting": 267,
+            "edge_queues": {
+              "L4P01": 259,
+              "STAIR_A": 8
+            }
+          },
+          {
+            "time_s": 25,
+            "total_waiting": 262,
+            "edge_queues": {
+              "L4P01": 249,
+              "STAIR_A": 13
+            }
+          },
+          {
+            "time_s": 30,
+            "total_waiting": 257,
+            "edge_queues": {
+              "L4P01": 239,
+              "STAIR_A": 18
+            }
+          },
+          {
+            "time_s": 35,
+            "total_waiting": 252,
+            "edge_queues": {
+              "L4P01": 229,
+              "STAIR_A": 23
+            }
+          },
+          {
+            "time_s": 40,
+            "total_waiting": 247,
+            "edge_queues": {
+              "L4P01": 219,
+              "STAIR_A": 28
+            }
+          },
+          {
+            "time_s": 45,
+            "total_waiting": 242,
+            "edge_queues": {
+              "L4P01": 209,
+              "STAIR_A": 33
+            }
+          },
+          {
+            "time_s": 50,
+            "total_waiting": 237,
+            "edge_queues": {
+              "L4P01": 199,
+              "STAIR_A": 38
+            }
+          },
+          {
+            "time_s": 55,
+            "total_waiting": 232,
+            "edge_queues": {
+              "L4P01": 189,
+              "STAIR_A": 43
+            }
+          },
+          {
+            "time_s": 60,
+            "total_waiting": 0,
+            "edge_queues": {}
+          }
+        ],
+        "bottleneck_edge_ids": [
+          "L4P01",
+          "STAIR_A"
+        ]
       },
-      {
-        "edge_id": "E13_IN",
-        "capacity_per_s": 2,
-        "admitted_count": 100,
-        "max_queue_count": 0,
-        "max_wait_s": 0,
-        "min_admission_interval_s": 1
-      },
-      {
-        "edge_id": "E13_OUT",
-        "capacity_per_s": 2,
-        "admitted_count": 100,
-        "max_queue_count": 0,
-        "max_wait_s": 0,
-        "min_admission_interval_s": 1
-      },
-      {
-        "edge_id": "L4P01",
-        "capacity_per_s": 2,
-        "admitted_count": 100,
-        "max_queue_count": 99,
-        "max_wait_s": 49.5,
-        "min_admission_interval_s": 0.5
-      },
-      {
-        "edge_id": "L4P03",
-        "capacity_per_s": 2,
-        "admitted_count": 100,
-        "max_queue_count": 0,
-        "max_wait_s": 0,
-        "min_admission_interval_s": 0.5
-      },
-      {
-        "edge_id": "STAIR_B",
-        "capacity_per_s": 1,
-        "admitted_count": 100,
-        "max_queue_count": 50,
-        "max_wait_s": 49.5,
-        "min_admission_interval_s": 1
-      }
-    ],
-    "timeline": [
-      {
-        "time_s": 0,
-        "total_waiting": 99,
-        "edge_queues": {
-          "L4P01": 99
-        }
-      },
-      {
-        "time_s": 5,
-        "total_waiting": 89,
-        "edge_queues": {
-          "L4P01": 89
-        }
-      },
-      {
-        "time_s": 10,
-        "total_waiting": 79,
-        "edge_queues": {
-          "L4P01": 79
-        }
-      },
-      {
-        "time_s": 15,
-        "total_waiting": 69,
-        "edge_queues": {
-          "L4P01": 69
-        }
-      },
-      {
-        "time_s": 20,
-        "total_waiting": 62,
-        "edge_queues": {
-          "L4P01": 59,
-          "STAIR_B": 3
-        }
-      },
-      {
-        "time_s": 25,
-        "total_waiting": 57,
-        "edge_queues": {
-          "L4P01": 49,
-          "STAIR_B": 8
-        }
-      },
-      {
-        "time_s": 30,
-        "total_waiting": 52,
-        "edge_queues": {
-          "L4P01": 39,
-          "STAIR_B": 13
-        }
-      },
-      {
-        "time_s": 35,
-        "total_waiting": 47,
-        "edge_queues": {
-          "L4P01": 29,
-          "STAIR_B": 18
-        }
-      },
-      {
-        "time_s": 40,
-        "total_waiting": 42,
-        "edge_queues": {
-          "L4P01": 19,
-          "STAIR_B": 23
-        }
-      },
-      {
-        "time_s": 45,
-        "total_waiting": 37,
-        "edge_queues": {
-          "L4P01": 9,
-          "STAIR_B": 28
-        }
-      },
-      {
-        "time_s": 50,
-        "total_waiting": 33,
-        "edge_queues": {
-          "STAIR_B": 33
-        }
-      },
-      {
-        "time_s": 55,
-        "total_waiting": 38,
-        "edge_queues": {
-          "STAIR_B": 38
-        }
-      },
-      {
-        "time_s": 60,
-        "total_waiting": 43,
-        "edge_queues": {
-          "STAIR_B": 43
-        }
-      },
-      {
-        "time_s": 65,
-        "total_waiting": 48,
-        "edge_queues": {
-          "STAIR_B": 48
-        }
-      },
-      {
-        "time_s": 70,
-        "total_waiting": 46,
-        "edge_queues": {
-          "STAIR_B": 46
-        }
-      },
-      {
-        "time_s": 75,
-        "total_waiting": 41,
-        "edge_queues": {
-          "STAIR_B": 41
-        }
-      },
-      {
-        "time_s": 80,
-        "total_waiting": 36,
-        "edge_queues": {
-          "STAIR_B": 36
-        }
-      },
-      {
-        "time_s": 85,
-        "total_waiting": 31,
-        "edge_queues": {
-          "STAIR_B": 31
-        }
-      },
-      {
-        "time_s": 90,
-        "total_waiting": 26,
-        "edge_queues": {
-          "STAIR_B": 26
-        }
-      },
-      {
-        "time_s": 95,
-        "total_waiting": 21,
-        "edge_queues": {
-          "STAIR_B": 21
-        }
-      },
-      {
-        "time_s": 100,
-        "total_waiting": 16,
-        "edge_queues": {
-          "STAIR_B": 16
-        }
-      },
-      {
-        "time_s": 105,
-        "total_waiting": 11,
-        "edge_queues": {
-          "STAIR_B": 11
-        }
-      },
-      {
-        "time_s": 110,
-        "total_waiting": 6,
-        "edge_queues": {
-          "STAIR_B": 6
-        }
-      },
-      {
-        "time_s": 115,
-        "total_waiting": 1,
-        "edge_queues": {
-          "STAIR_B": 1
-        }
-      },
-      {
-        "time_s": 120,
-        "total_waiting": 0,
-        "edge_queues": {}
-      },
-      {
-        "time_s": 125,
-        "total_waiting": 0,
-        "edge_queues": {}
-      },
-      {
-        "time_s": 130,
-        "total_waiting": 0,
-        "edge_queues": {}
-      },
-      {
-        "time_s": 135,
-        "total_waiting": 0,
-        "edge_queues": {}
-      },
-      {
-        "time_s": 140,
-        "total_waiting": 0,
-        "edge_queues": {}
-      },
-      {
-        "time_s": 145,
-        "total_waiting": 0,
-        "edge_queues": {}
-      },
-      {
-        "time_s": 150,
-        "total_waiting": 0,
-        "edge_queues": {}
-      },
-      {
-        "time_s": 155,
-        "total_waiting": 0,
-        "edge_queues": {}
-      },
-      {
-        "time_s": 160,
-        "total_waiting": 0,
-        "edge_queues": {}
-      },
-      {
-        "time_s": 160.667,
-        "total_waiting": 0,
-        "edge_queues": {}
-      }
-    ],
-    "bottleneck_edge_ids": [
-      "L4P01",
-      "STAIR_B"
-    ]
+      "resultText": "RESULT COMPARISON\n차단 전후 한눈에 비교\n\n평균은 도착한 인원만 계산합니다.\n\n지표\t차단 전 기준\t조건 반영\n도착 인원\t8 / 300명\t8 / 300명\n경로 없음\t0명\t0명\n시간 제한 미도착\t292명\t292명\n평균 도착 모의 시간\t56초\n도착한 8명만의 평균\n\t56초\n도착한 8명만의 평균\n\n마지막 도착 모의 시간\t59.5초\t59.5초\n선택된 출구\t11번 출구 8명\t11번 출구 8명\n주요 병목 후보\tL4P01 · 4호선 승강장 회현 방향 계단 주변 ↔ 회현 방향 승강장 구간 · 최대 299명\tL4P01 · 4호선 승강장 회현 방향 계단 주변 ↔ 회현 방향 승강장 구간 · 최대 299명\n차단 전 기준\n제한시간에 실험이 종료됐습니다\n\n경로는 있지만 제한시간 종료 시 대기·이동·출발 전 인원이 남았습니다.\n\n조건 반영\n제한시간에 실험이 종료됐습니다\n\n경로는 있지만 제한시간 종료 시 대기·이동·출발 전 인원이 남았습니다.\n\nQUEUE OVER TIME\n시간별 모의 대기 인원\n차단 전 최대 299명\n조건 반영 최대 299명\n경과시간(초)\n대기 인원(명)\n0\n60\n299\n시간별 값 표 보기\n\n입력 가정으로 계산한 대기열이며 실제 군중 밀도나 실측 혼잡도가 아닙니다.\n\n가정 조건 내 병목 후보\n\n조건 반영 결과의 FIFO 대기열이 큰 순서입니다.\n\n1\nL4P01\n4호선 승강장 회현 방향 계단 주변 ↔ 회현 방향 승강장 구간\n최대 대기 299명\n최대 대기시간 60초\n2\nSTAIR_A\n주 계단 승강장측 ↔ 주 계단 대합실측\n최대 대기 49명\n최대 대기시간 24초\n실제 서울역의 위험 지점이나 안내 설치 후보를 의미하지 않습니다."
+    }
   },
-  "resultText": "차단 전 기준\n도착 / 시작\n100 / 100명\n미도달\n0명\n모의 종료 시각\n151.5초\n마지막 도착\n151.5초\n평균 도착\n102초\n\n11번 100명\n\nALL_REACHABLE_AGENTS_ARRIVED\n조건 반영\n도착 / 시작\n100 / 100명\n미도달\n0명\n모의 종료 시각\n160.667초\n마지막 도착\n160.667초\n평균 도착\n111.167초\n\n13번 100명\n\nALL_REACHABLE_AGENTS_ARRIVED\n시간별 모의 대기 인원\n최대 99명\n가정 조건 내 병목 후보\nL4P01\n최대 대기 99명 · 최대 49.5초\nSTAIR_B\n최대 대기 50명 · 최대 49.5초",
+  "rawStatusCodesExposed": false,
   "desktop": {
     "bodyWidth": 1440,
     "viewportWidth": 1440
