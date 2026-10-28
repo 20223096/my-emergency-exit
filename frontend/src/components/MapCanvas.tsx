@@ -19,6 +19,8 @@ interface MapCanvasProps {
   selectedStartNodeId?: string
   floor?: number | null
   hazardEdgeIds?: string[]
+  showBaseline?: boolean
+  showScenario?: boolean
 }
 
 export function MapCanvas({
@@ -31,6 +33,8 @@ export function MapCanvas({
   selectedStartNodeId,
   floor = null,
   hazardEdgeIds = [],
+  showBaseline = true,
+  showScenario = true,
 }: MapCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [labelMeasurements, setLabelMeasurements] = useState<Map<string, LabelMeasurement>>(new Map())
@@ -150,11 +154,11 @@ export function MapCanvas({
         </g>
 
         <g aria-label="경로 강조">
-          {visibleEdges.filter((edge) => baselineEdges.has(edge.id)).map((edge) => (
+          {showBaseline && visibleEdges.filter((edge) => baselineEdges.has(edge.id)).map((edge) => (
             <path key={`baseline-${edge.id}`} d={getEdgeGeometry(mapData, edge).path}
               className="route-overlay route-baseline" data-testid={`baseline-${edge.id}`} />
           ))}
-          {visibleEdges.filter((edge) => scenarioEdges.has(edge.id)).map((edge) => (
+          {showScenario && visibleEdges.filter((edge) => scenarioEdges.has(edge.id)).map((edge) => (
             <path key={`scenario-${edge.id}`} d={getEdgeGeometry(mapData, edge).path}
               className="route-overlay route-scenario" data-testid={`scenario-${edge.id}`} />
           ))}
